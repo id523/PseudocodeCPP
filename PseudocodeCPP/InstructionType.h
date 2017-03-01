@@ -3,6 +3,7 @@
 #include "Byte.h"
 
 enum InstructionType : byte {
+	Nop,
 	Jump, Conditional,
 	LongJump, LongConditional,
 	PushFrame, PopFrame,
@@ -25,8 +26,4 @@ enum InstructionType : byte {
 	IntDiv, RealDiv,
 	IntMod, RealMod,
 	IntNeg, RealNeg,
-	BoolToString,
-	IntToReal, IntToString,
-	RealToInt, RealToString,
-	StringToBool, StringToInt, StringToReal,
 };

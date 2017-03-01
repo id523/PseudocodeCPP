@@ -146,12 +146,20 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Byte.h" />
+    <ClInclude Include="GarbageCollector.h" />
+    <ClInclude Include="HeapObject.h" />
     <ClInclude Include="InstructionType.h" />
+    <ClInclude Include="RuntimeError.h" />
+    <ClInclude Include="PrimitiveObject.h" />
+    <ClInclude Include="PrimitiveType.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="VirtualMachine.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="HeapObject.cpp" />
+    <ClCompile Include="RuntimeError.cpp" />
+    <ClCompile Include="PrimitiveObject.cpp" />
     <ClCompile Include="PseudocodeCPP.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
