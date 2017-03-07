@@ -157,6 +157,7 @@
     <ClInclude Include="VirtualMachine.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="GarbageCollector.cpp" />
     <ClCompile Include="HeapObject.cpp" />
     <ClCompile Include="RuntimeError.cpp" />
     <ClCompile Include="PrimitiveObject.cpp" />

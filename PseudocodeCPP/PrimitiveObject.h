@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <string>
 
-#include "PcObjectType.h"
+#include "PrimitiveType.h"
 #include "HeapObject.h"
 
 class PrimitiveObject {
@@ -16,11 +16,8 @@ private:
 		double RealValue;
 		HeapObject* RefValue;
 	} Data;
-
-	std::string StrValue;
 	bool OnStack;
 	void DestroyValue();
-
 public:
 	PrimitiveObject();
 	~PrimitiveObject();
@@ -30,15 +27,12 @@ public:
 	bool GetBoolValue() const;
 	int64_t GetIntValue() const;
 	double GetRealValue() const;
-	std::string GetStringValue() const;
 	HeapObject* GetHeapObjectValue() const;
 	void SetNull();
 	void SetTypeValue(PrimitiveType t);
 	void SetBoolValue(bool b);
 	void SetIntValue(int64_t i);
 	void SetRealValue(double d);
-	void SetStringValue(const std::string& s);
-	void SetStringValue(const std::string&& s);
 	void SetHeapObjectValue(HeapObject* r);
 };
 

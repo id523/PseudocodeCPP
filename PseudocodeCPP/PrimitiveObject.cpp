@@ -3,7 +3,7 @@
 #include <sstream>
 
 #include "PrimitiveObject.h"
-#include "PcRuntimeError.h"
+#include "RuntimeError.h"
 
 RuntimeError TypeConvertError(PrimitiveType from, PrimitiveType to) {
 	std::ostringstream formatter;
@@ -18,9 +18,6 @@ RuntimeError TypeConvertError(PrimitiveType from, PrimitiveType to) {
 void PrimitiveObject::DestroyValue()
 {
 	switch (Type) {
-	case ObjType_Str:
-		StrValue.clear();
-		break;
 	case ObjType_HeapObj:
 		// Decrement reference count
 		break;
@@ -79,29 +76,6 @@ double PrimitiveObject::GetRealValue() const
 	}
 }
 
-std::string PrimitiveObject::GetStringValue() const
-{
-	switch (Type) {
-	case ObjType_Null: return "Null";
-	case ObjType_Str: return StrValue;
-	case ObjType_Bool: return Data.BoolValue ? "True" : "False";
-	case ObjType_Int: {
-		std::ostringstream formatter;
-		formatter << Data.IntValue;
-		return formatter.str();
-	}
-	case ObjType_Real: {
-		std::ostringstream formatter;
-		formatter.setf(std::ios_base::scientific, std::ios_base::floatfield);
-		formatter.precision(15);
-		formatter << Data.RealValue;
-		return formatter.str();
-	}
-	case ObjType_Type: return TypeToString(Data.TypeValue);
-	default: throw TypeConvertError(Type, ObjType_Str);
-	}
-}
-
 HeapObject* PrimitiveObject::GetHeapObjectValue() const
 {
 	if (Type == ObjType_HeapObj) return Data.RefValue;
@@ -139,20 +113,6 @@ void PrimitiveObject::SetRealValue(double d)
 	DestroyValue();
 	Type = ObjType_Real;
 	Data.RealValue = d;
-}
-
-void PrimitiveObject::SetStringValue(const std::string& s)
-{
-	DestroyValue();
-	Type = ObjType_Str;
-	StrValue = s;
-}
-
-void PrimitiveObject::SetStringValue(const std::string&& s)
-{
-	DestroyValue();
-	Type = ObjType_Str;
-	StrValue = std::move(s);
 }
 
 void PrimitiveObject::SetHeapObjectValue(HeapObject* r)

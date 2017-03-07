@@ -8,7 +8,6 @@ enum PrimitiveType : byte {
 	ObjType_Bool,
 	ObjType_Int,
 	ObjType_Real,
-	ObjType_Str,
 	ObjType_HeapObj,
 };
 
@@ -20,7 +19,6 @@ inline const char* TypeToString(PrimitiveType t)
 	case ObjType_Bool: return "Boolean";
 	case ObjType_Int: return "Integer";
 	case ObjType_Real: return "Real";
-	case ObjType_Str: return "String";
 	case ObjType_HeapObj: return "Object";
 	default: return "Unknown Type";
 	}
