@@ -5,6 +5,7 @@
 
 #include "PrimitiveType.h"
 #include "HeapObject.h"
+#include "GarbageCollector.h"
 
 class PrimitiveObject {
 private:
@@ -16,10 +17,12 @@ private:
 		double RealValue;
 		HeapObject* RefValue;
 	} Data;
+	GarbageCollector* GC;
 	bool OnStack;
 	void DestroyValue();
 public:
 	PrimitiveObject();
+	PrimitiveObject(GarbageCollector* gc);
 	~PrimitiveObject();
 	PrimitiveType GetType() const;
 	bool IsNull() const;
@@ -34,5 +37,6 @@ public:
 	void SetIntValue(int64_t i);
 	void SetRealValue(double d);
 	void SetHeapObjectValue(HeapObject* r);
+	PrimitiveObject& SetOnStack(bool v);
 };
 

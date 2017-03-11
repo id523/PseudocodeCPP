@@ -1,5 +1,7 @@
 #include "stdafx.h"
 
+#include <unordered_set>
+
 #include "GarbageCollector.h"
 #include "RuntimeError.h"
 
@@ -7,6 +9,7 @@
 
 GarbageCollector::GarbageCollector()
 {
+	randstate = 4283798574385720ui64;
 }
 
 GarbageCollector::~GarbageCollector()
@@ -68,17 +71,80 @@ void GarbageCollector::DecrementRefCount(HeapObject * ref, bool stack)
 		else throw RuntimeError("Memory error: Unable to decrease reference count of unknown object.");
 	}
 
-	bool doDeallocate = DecrementWithoutCollect(ref);
-	if (doDeallocate) {
-		std::vector<HeapObject*> objects;
-		objects.push_back(ref);
-		while (!objects.empty()) {
-			HeapObject* obj = Pick(objects);
+	objects.push_back(ref);
+	if (suspense == 0) FastCollect();
+}
 
+void GarbageCollector::Suspend()
+{
+	suspense++;
+}
+
+void GarbageCollector::Resume()
+{
+	if (suspense > 0) suspense--;
+	if (suspense == 0) FastCollect();
+}
+
+void GarbageCollector::FastCollect()
+{
+	// While there are objects to clean up,
+	while (!objects.empty()) {
+		// pick an object to clean up
+		HeapObject* obj = Pick(objects);
+		// Decrement its reference count
+		bool doDeallocate = DecrementWithoutCollect(obj);
+		// If the reference count reaches zero,
+		if (doDeallocate) {
+			// Add the referenced objects to the cleanup queue
+			obj->GetReferencedObjects(objects);
+			delete obj;
 		}
 	}
 }
 
 void GarbageCollector::SlowCollect()
 {
+	FastCollect();
+	std::unordered_set<HeapObject*> whiteSet; // Objects which have not been referenced yet
+	std::vector<HeapObject*> grayList; // Objects to check for referencing
+	std::vector<HeapObject*> referenceList; // Temporarily stores the references each object has
+	// Get set of all known objects into whiteSet
+	for (const auto& kvp : totalrefcount) {
+		whiteSet.insert(kvp.first);
+	}
+	// Move objects to the gray list if they are directly accessible from the stack
+	for (const auto& kvp : stackrefcount) {
+		if (whiteSet.erase(kvp.first)) {
+			grayList.push_back(kvp.first);
+		}
+	}
+	// Remove objects from the white set if they are accessible from the gray list
+	while (!grayList.empty()) {
+		// Take an object out of the gray list
+		HeapObject* grayObj = Pick(grayList);
+		// Get objects that are referenced by it
+		referenceList.clear();
+		grayObj->GetReferencedObjects(referenceList);
+		for (HeapObject* referencedObj : referenceList) {
+			// If the object is in the white set, move it to the gray list
+			if (whiteSet.erase(referencedObj)) {
+				grayList.push_back(referencedObj);
+			}
+		}
+	}
+	// Free all objects in the white set
+	for (HeapObject* whiteObj : whiteSet) {
+		// Get all objects referenced by white objects
+		referenceList.clear();
+		whiteObj->GetReferencedObjects(referenceList);
+		// For each referenced object
+		for (HeapObject* referencedObj : referenceList) {
+			// If it is not in the white set, reduce the reference count
+			if (whiteSet.count(referencedObj) <= 0) {
+				DecrementWithoutCollect(referencedObj);
+			}
+		}
+		delete whiteObj;
+	}
 }

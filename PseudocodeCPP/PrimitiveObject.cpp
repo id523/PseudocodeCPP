@@ -20,6 +20,7 @@ void PrimitiveObject::DestroyValue()
 	switch (Type) {
 	case ObjType_HeapObj:
 		// Decrement reference count
+		if (GC) GC->DecrementRefCount(Data.RefValue, OnStack);
 		break;
 	}
 	Type = ObjType_Null;
@@ -28,6 +29,15 @@ void PrimitiveObject::DestroyValue()
 PrimitiveObject::PrimitiveObject()
 {
 	Type = ObjType_Null;
+	GC = nullptr;
+	OnStack = false;
+}
+
+PrimitiveObject::PrimitiveObject(GarbageCollector * gc)
+{
+	Type = ObjType_Null;
+	GC = gc;
+	OnStack = false;
 }
 
 PrimitiveObject::~PrimitiveObject()
@@ -117,7 +127,26 @@ void PrimitiveObject::SetRealValue(double d)
 
 void PrimitiveObject::SetHeapObjectValue(HeapObject* r)
 {
+	if (GC) GC->Suspend();
 	DestroyValue();
 	Type = ObjType_HeapObj;
 	Data.RefValue = r;
+	if (GC) {
+		GC->IncrementRefCount(r, OnStack);
+		GC->Resume();
+	}
+}
+
+PrimitiveObject& PrimitiveObject::SetOnStack(bool v)
+{
+	if (Type == ObjType_HeapObj) {
+		if (v != OnStack) {
+			if (GC) {
+				GC->IncrementRefCount(Data.RefValue, v);
+				GC->DecrementRefCount(Data.RefValue, OnStack);
+			}
+			OnStack = v;
+		}
+	}
+	return *this;
 }
