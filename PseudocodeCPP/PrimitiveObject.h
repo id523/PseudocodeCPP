@@ -38,5 +38,6 @@ public:
 	void SetRealValue(double d);
 	void SetHeapObjectValue(HeapObject* r);
 	PrimitiveObject& SetOnStack(bool v);
+	// TODO: Move- and copy-assignment semantics
 };
 

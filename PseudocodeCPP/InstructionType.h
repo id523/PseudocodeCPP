@@ -33,12 +33,15 @@ enum InstructionType : byte {
 	ShallowCopy, // Pops a pointer to an object, makes a shallow copy of it, and pushes the pointer to the copy.
 	GetGlobalObject, // Gets a pointer to the global object.
 	GetFunctionObject, // Gets a pointer to the object containing the current function.
+	GetMemberIndex, // Skips 4 bytes of program, and gets the member of the object with that index.
+	SetMemberIndex, // Skips 4 bytes of program, and sets the member of the object with that index.
 	GetMember, // Gets a member of an object.
 	SetMember, // Sets a member of an object.
-	GetMemberDynamic,
-	SetMemberDynamic,
+	GetMemberDynamic, // Gets a member of an object. The member chosen depends on the contents of the stack.
+	SetMemberDynamic, // Sets a member of an object. The member chosen depends on the contents of the stack.
+	// TODO: Clarify how [GS]etMember(Dynamic)? are going to reference named members.
 // CODE
-	ClearCode, // Pops an object pointer and removes the code contained in the object.
+	ClearCode, // Pops an object pointer and removes the code contained in that object.
 	BeginAppendCode, // Skips all instructions up to the matching EndAppendCode, appending them to the code of the object pointed to by the top of the stack, without removing the pointer.
 	EndAppendCode, // Stops skipping instructions and pops the object pointer left at the top of the stack.
 };
