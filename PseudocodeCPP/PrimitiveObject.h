@@ -23,6 +23,11 @@ private:
 public:
 	PrimitiveObject();
 	PrimitiveObject(GarbageCollector* gc);
+	PrimitiveObject(const PrimitiveObject& other);
+	PrimitiveObject(PrimitiveObject&& other);
+	void swap(PrimitiveObject& r);
+	PrimitiveObject& operator=(PrimitiveObject other);
+	PrimitiveObject& operator=(PrimitiveObject&& other);
 	~PrimitiveObject();
 	PrimitiveType GetType() const;
 	bool IsNull() const;
@@ -38,6 +43,14 @@ public:
 	void SetRealValue(double d);
 	void SetHeapObjectValue(HeapObject* r);
 	PrimitiveObject& SetOnStack(bool v);
-	// TODO: Move- and copy-assignment semantics
 };
+namespace std
+{
+	template<>
+	void swap(PrimitiveObject& lhs, PrimitiveObject& rhs)
+	{
+		lhs.swap(rhs);
+	}
+}
+
 

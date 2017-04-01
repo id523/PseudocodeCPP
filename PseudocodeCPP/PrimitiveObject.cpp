@@ -17,13 +17,14 @@ RuntimeError TypeConvertError(PrimitiveType from, PrimitiveType to) {
 
 void PrimitiveObject::DestroyValue()
 {
-	switch (Type) {
+	PrimitiveType oldType = Type;
+	Type = ObjType_Null;
+	switch (oldType) {
 	case ObjType_HeapObj:
 		// Decrement reference count
 		if (GC) GC->DecrementRefCount(Data.RefValue, OnStack);
 		break;
 	}
-	Type = ObjType_Null;
 }
 
 PrimitiveObject::PrimitiveObject()
@@ -38,6 +39,51 @@ PrimitiveObject::PrimitiveObject(GarbageCollector * gc)
 	Type = ObjType_Null;
 	GC = gc;
 	OnStack = false;
+}
+
+PrimitiveObject::PrimitiveObject(const PrimitiveObject & other)
+{
+	Type = other.Type;
+	GC = other.GC;
+	OnStack = other.OnStack;
+	if (GC && other.Type == ObjType_HeapObj) {
+		GC->IncrementRefCount(other.Data.RefValue, OnStack);
+	}
+	Data = other.Data;
+}
+
+PrimitiveObject::PrimitiveObject(PrimitiveObject && other)
+{
+	Type = other.Type;
+	GC = other.GC;
+	OnStack = other.OnStack;
+	Data = other.Data;
+	other.Type = ObjType_Null;
+}
+
+void PrimitiveObject::swap(PrimitiveObject & r)
+{
+	std::swap(Type, r.Type);
+	std::swap(GC, r.GC);
+	std::swap(OnStack, r.OnStack);
+	std::swap(Data, r.Data);
+}
+
+PrimitiveObject & PrimitiveObject::operator=(PrimitiveObject other)
+{
+	this->swap(other);
+	return *this;
+}
+
+PrimitiveObject & PrimitiveObject::operator=(PrimitiveObject && other)
+{
+	DestroyValue();
+	Type = other.Type;
+	GC = other.GC;
+	OnStack = other.OnStack;
+	Data = other.Data;
+	other.Type = ObjType_Null;
+	return *this;
 }
 
 PrimitiveObject::~PrimitiveObject()
@@ -129,12 +175,12 @@ void PrimitiveObject::SetHeapObjectValue(HeapObject* r)
 {
 	if (GC) GC->Suspend();
 	DestroyValue();
-	Type = ObjType_HeapObj;
-	Data.RefValue = r;
 	if (GC) {
 		GC->IncrementRefCount(r, OnStack);
 		GC->Resume();
 	}
+	Type = ObjType_HeapObj;
+	Data.RefValue = r;
 }
 
 PrimitiveObject& PrimitiveObject::SetOnStack(bool v)
