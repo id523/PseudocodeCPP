@@ -36,13 +36,15 @@ public:
 	int64_t GetIntValue() const;
 	double GetRealValue() const;
 	HeapObject* GetHeapObjectValue() const;
+	GarbageCollector* GetGarbageCollector() const;
 	void SetNull();
 	void SetTypeValue(PrimitiveType t);
 	void SetBoolValue(bool b);
 	void SetIntValue(int64_t i);
 	void SetRealValue(double d);
 	void SetHeapObjectValue(HeapObject* r);
-	PrimitiveObject& SetOnStack(bool v);
+	void SetGCAndNull(GarbageCollector* gc);
+	void SetOnStack(bool v);
 };
 namespace std
 {
