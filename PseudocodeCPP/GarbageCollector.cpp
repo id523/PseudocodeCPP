@@ -7,32 +7,28 @@
 
 
 
-GarbageCollector::GarbageCollector()
-{
+GarbageCollector::GarbageCollector() {
 	randstate = 4283798574385720ui64;
 }
 
-GarbageCollector::~GarbageCollector()
-{
+GarbageCollector::~GarbageCollector() {
 }
 
-void GarbageCollector::IncrementRefCount(HeapObject * ref, bool stack)
-{
+void GarbageCollector::IncrementRefCount(HeapObject * ref, bool stack) {
 	if (stack) {
 		// If there is an entry in the reference-count map, increment it
 		if (stackrefcount.count(ref) > 0) stackrefcount[ref]++;
 		// Otherwise create an entry with the value 1
 		else stackrefcount[ref] = 1;
 	}
-	
+
 	// If there is an entry in the reference-count map, increment it
 	if (totalrefcount.count(ref) > 0) totalrefcount[ref]++;
 	// Otherwise create an entry with the value 1
 	else totalrefcount[ref] = 1;
 }
 
-bool GarbageCollector::DecrementWithoutCollect(HeapObject * ref)
-{
+bool GarbageCollector::DecrementWithoutCollect(HeapObject * ref) {
 	// If there is an entry in the reference-count map, decrement it
 	if (totalrefcount.count(ref) > 0) {
 		totalrefcount[ref]--;
@@ -50,15 +46,13 @@ bool GarbageCollector::DecrementWithoutCollect(HeapObject * ref)
 	else throw RuntimeError("Memory error: Unable to decrease reference count of unknown object.");
 }
 
-size_t GarbageCollector::RandNext(size_t max)
-{
+size_t GarbageCollector::RandNext(size_t max) {
 	randstate *= 6364136223846793005ui64;
 	randstate += 1442695040888963407ui64;
 	return (size_t)((randstate >> 16) % max);
 }
 
-void GarbageCollector::DecrementRefCount(HeapObject * ref, bool stack)
-{
+void GarbageCollector::DecrementRefCount(HeapObject * ref, bool stack) {
 	if (stack) {
 		// If there is an entry in the reference-count map, decrement it
 		if (stackrefcount.count(ref) > 0) {
@@ -75,19 +69,16 @@ void GarbageCollector::DecrementRefCount(HeapObject * ref, bool stack)
 	if (suspense == 0) FastCollect();
 }
 
-void GarbageCollector::Suspend()
-{
+void GarbageCollector::Suspend() {
 	suspense++;
 }
 
-void GarbageCollector::Resume()
-{
+void GarbageCollector::Resume() {
 	if (suspense > 0) suspense--;
 	if (suspense == 0) FastCollect();
 }
 
-void GarbageCollector::FastCollect()
-{
+void GarbageCollector::FastCollect() {
 	// While there are objects to clean up,
 	while (!objects.empty()) {
 		// pick an object to clean up
@@ -103,8 +94,7 @@ void GarbageCollector::FastCollect()
 	}
 }
 
-void GarbageCollector::SlowCollect()
-{
+void GarbageCollector::SlowCollect() {
 	FastCollect();
 	std::unordered_set<HeapObject*> whiteSet; // Objects which have not been referenced yet
 	std::vector<HeapObject*> grayList; // Objects to check for referencing

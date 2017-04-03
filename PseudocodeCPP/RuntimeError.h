@@ -3,8 +3,7 @@
 #include <exception>
 
 class RuntimeError :
-	public std::exception
-{
+	public std::exception {
 private:
 	const char* message;
 public:

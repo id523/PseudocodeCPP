@@ -1,8 +1,7 @@
 #pragma once
 #include <vector>
 #include "Byte.h"
-class HeapObject
-{
+class HeapObject {
 private:
 	std::vector<byte> Code;
 public:
@@ -15,8 +14,7 @@ public:
 };
 
 template<class ByteIterator>
-inline void HeapObject::AppendCode(ByteIterator begin, ByteIterator end)
-{
+inline void HeapObject::AppendCode(ByteIterator begin, ByteIterator end) {
 	while (begin != end) {
 		Code.push_back(*begin);
 		begin++;

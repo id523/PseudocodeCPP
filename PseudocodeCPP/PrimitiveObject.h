@@ -46,11 +46,9 @@ public:
 	void SetGCAndNull(GarbageCollector* gc);
 	void SetOnStack(bool v);
 };
-namespace std
-{
+namespace std {
 	template<>
-	void swap(PrimitiveObject& lhs, PrimitiveObject& rhs)
-	{
+	void swap(PrimitiveObject& lhs, PrimitiveObject& rhs) {
 		lhs.swap(rhs);
 	}
 }

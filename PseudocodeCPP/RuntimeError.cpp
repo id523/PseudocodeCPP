@@ -2,22 +2,18 @@
 #include "RuntimeError.h"
 
 
-RuntimeError::RuntimeError()
-{
+RuntimeError::RuntimeError() {
 	message = "An error occurred.";
 }
 
-RuntimeError::RuntimeError(const char * msg)
-{
+RuntimeError::RuntimeError(const char * msg) {
 	message = msg;
 }
 
 
-RuntimeError::~RuntimeError()
-{
+RuntimeError::~RuntimeError() {
 }
 
-const char* RuntimeError::what() const
-{
+const char* RuntimeError::what() const {
 	return message;
 }

@@ -27,16 +27,14 @@ public:
 };
 
 template<class T>
-inline T GarbageCollector::Pick(std::vector<T>& fromvec)
-{
+inline T GarbageCollector::Pick(std::vector<T>& fromvec) {
 	if (fromvec.empty()) {
 		throw RuntimeError("Memory error: Unable to pick an item from an empty container.");
 	} else if (fromvec.size() <= 2) {
 		T result = *fromvec.begin();
 		fromvec.erase(fromvec.begin());
 		return result;
-		}
-	else {
+	} else {
 		size_t loc = RandNext(fromvec.size() - 1);
 		const auto last = fromvec.rbegin();
 		T result = fromvec[loc];

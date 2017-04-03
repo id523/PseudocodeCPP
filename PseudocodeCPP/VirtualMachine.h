@@ -1,6 +1,5 @@
 #pragma once
-class VirtualMachine
-{
+class VirtualMachine {
 private:
 
 public:

@@ -11,8 +11,7 @@ enum PrimitiveType : byte {
 	ObjType_HeapObj,
 };
 
-inline const char* TypeToString(PrimitiveType t)
-{
+inline const char* TypeToString(PrimitiveType t) {
 	switch (t) {
 	case ObjType_Null: return "Null";
 	case ObjType_Type: return "Type";
