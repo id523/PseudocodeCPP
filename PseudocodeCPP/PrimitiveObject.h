@@ -45,6 +45,8 @@ public:
 	void SetHeapObjectValue(HeapObject* r);
 	void SetGCAndNull(GarbageCollector* gc);
 	void SetOnStack(bool v);
+	void SuspendGC();
+	void ResumeGC();
 };
 namespace std {
 	template<>

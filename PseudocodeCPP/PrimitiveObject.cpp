@@ -179,3 +179,11 @@ void PrimitiveObject::SetOnStack(bool v) {
 	}
 	OnStack = v;
 }
+
+void PrimitiveObject::SuspendGC() {
+	if (GC) GC->Suspend();
+}
+
+void PrimitiveObject::ResumeGC() {
+	if (GC) GC->Resume();
+}
