@@ -12,6 +12,7 @@ GarbageCollector::GarbageCollector() {
 }
 
 GarbageCollector::~GarbageCollector() {
+	//TODO: Destroy all objects
 }
 
 void GarbageCollector::IncrementRefCount(HeapObject * ref, bool stack) {
