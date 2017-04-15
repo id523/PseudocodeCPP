@@ -19,4 +19,5 @@ void HeapObject::ClearCode() {
 
 byte HeapObject::GetCodeAt(size_t pos) {
 	if (pos > Code.size()) return InstructionType::Ret;
+	return Code[pos];
 }
