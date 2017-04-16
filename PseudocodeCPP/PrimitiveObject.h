@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <string>
+#include <utility>
 
 #include "PrimitiveType.h"
 #include "HeapObject.h"
