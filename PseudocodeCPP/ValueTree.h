@@ -1,6 +1,6 @@
 #pragma once
 #include "Byte.h"
-#include <utility>
+
 template<class T>
 class ValueTree {
 private:
@@ -23,10 +23,3 @@ public:
 	void SetValue(const T& Value);
 	bool RemoveValue();
 };
-
-namespace std {
-	template<class T>
-	void swap(ValueTree<T>& lhs, ValueTree<T>& rhs) {
-		lhs.swap(rhs);
-	}
-}
