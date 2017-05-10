@@ -88,8 +88,8 @@ void GarbageCollector::FastCollect() {
 		// If the reference count reaches zero,
 		if (doDeallocate) {
 			// Add the referenced objects to the cleanup queue
-			obj->GetReferencedObjects(objects);
-			delete obj;
+			GetReferencedObjects(*obj, objects);
+			DeleteObject(obj);
 		}
 	}
 }
@@ -115,7 +115,7 @@ void GarbageCollector::SlowCollect() {
 		HeapObject* grayObj = Pick(grayList);
 		// Get objects that are referenced by it
 		referenceList.clear();
-		grayObj->GetReferencedObjects(referenceList);
+		GetReferencedObjects(*grayObj, referenceList);
 		for (HeapObject* referencedObj : referenceList) {
 			// If the object is in the white set, move it to the gray list
 			if (whiteSet.erase(referencedObj)) {
@@ -127,7 +127,7 @@ void GarbageCollector::SlowCollect() {
 	for (HeapObject* whiteObj : whiteSet) {
 		// Get all objects referenced by white objects
 		referenceList.clear();
-		whiteObj->GetReferencedObjects(referenceList);
+		GetReferencedObjects(*whiteObj, referenceList);
 		// For each referenced object
 		for (HeapObject* referencedObj : referenceList) {
 			// If it is not in the white set, reduce the reference count
@@ -135,6 +135,6 @@ void GarbageCollector::SlowCollect() {
 				DecrementWithoutCollect(referencedObj);
 			}
 		}
-		delete whiteObj;
+		DeleteObject(whiteObj);
 	}
 }

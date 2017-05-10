@@ -48,6 +48,12 @@
     <ClInclude Include="ValueTree.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="HeapObject.forward.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HeapObjectGetReferences.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PseudocodeCPP.cpp">
@@ -69,9 +75,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GarbageCollector.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ValueTree.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

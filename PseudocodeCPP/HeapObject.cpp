@@ -10,9 +10,6 @@ HeapObject::HeapObject() {
 HeapObject::~HeapObject() {
 }
 
-void HeapObject::GetReferencedObjects(std::vector<HeapObject*>& objqueue) const {
-}
-
 void HeapObject::ClearCode() {
 	Code.clear();
 }
@@ -20,4 +17,12 @@ void HeapObject::ClearCode() {
 byte HeapObject::GetCodeAt(size_t pos) {
 	if (pos > Code.size()) return InstructionType::Ret;
 	return Code[pos];
+}
+
+void GetReferencedObjects(const HeapObject& obj, std::vector<HeapObject*>& objqueue) {
+
+}
+
+void DeleteObject(HeapObject* obj) {
+	delete obj;
 }

@@ -144,7 +144,9 @@
   <ItemGroup>
     <ClInclude Include="Byte.h" />
     <ClInclude Include="GarbageCollector.h" />
+    <ClInclude Include="HeapObject.forward.h" />
     <ClInclude Include="HeapObject.h" />
+    <ClInclude Include="HeapObjectGetReferences.h" />
     <ClInclude Include="InstructionType.h" />
     <ClInclude Include="RuntimeError.h" />
     <ClInclude Include="PrimitiveObject.h" />
@@ -166,7 +168,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="ValueTree.cpp" />
     <ClCompile Include="VirtualMachine.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

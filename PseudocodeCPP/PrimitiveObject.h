@@ -5,8 +5,8 @@
 #include <utility>
 
 #include "PrimitiveType.h"
-#include "HeapObject.h"
 #include "GarbageCollector.h"
+#include "HeapObject.forward.h"
 
 class PrimitiveObject {
 private:
@@ -49,11 +49,3 @@ public:
 	void SuspendGC();
 	void ResumeGC();
 };
-namespace std {
-	template<>
-	void swap(PrimitiveObject& lhs, PrimitiveObject& rhs) {
-		lhs.swap(rhs);
-	}
-}
-
-
