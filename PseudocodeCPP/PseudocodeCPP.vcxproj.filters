@@ -45,9 +45,6 @@
     <ClInclude Include="PrimitiveType.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ValueTree.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="HeapObject.forward.h">
       <Filter>Header Files</Filter>
     </ClInclude>

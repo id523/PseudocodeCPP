@@ -1,12 +1,13 @@
 #pragma once
 #include <vector>
+#include <map>
+#include <string>
 #include "Byte.h"
 #include "PrimitiveObject.h"
-#include "ValueTree.h"
 class HeapObject {
 private:
 	std::vector<byte> Code;
-	ValueTree<PrimitiveObject> Members;
+	std::map<std::string, PrimitiveObject> Members;
 public:
 	HeapObject();
 	~HeapObject();
