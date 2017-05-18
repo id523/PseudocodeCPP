@@ -54,10 +54,11 @@ PrimitiveObject::PrimitiveObject(PrimitiveObject && other) {
 }
 
 void PrimitiveObject::swap(PrimitiveObject & r) {
-	std::swap(Type, r.Type);
-	std::swap(GC, r.GC);
-	std::swap(OnStack, r.OnStack);
-	std::swap(Data, r.Data);
+	using std::swap;
+	swap(Type, r.Type);
+	swap(GC, r.GC);
+	swap(OnStack, r.OnStack);
+	swap(Data, r.Data);
 }
 
 PrimitiveObject & PrimitiveObject::operator=(PrimitiveObject other) {

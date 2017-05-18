@@ -1,7 +1,11 @@
 #pragma once
+#include <stack>
+#include <memory>
+
+#include "GarbageCollector.h"
 class VirtualMachine {
 private:
-
+	std::unique_ptr<GarbageCollector> GC;
 public:
 	VirtualMachine();
 	~VirtualMachine();

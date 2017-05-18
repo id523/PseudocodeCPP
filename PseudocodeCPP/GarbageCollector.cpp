@@ -15,6 +15,7 @@ GarbageCollector::~GarbageCollector() {
 }
 
 void GarbageCollector::IncrementRefCount(HeapObject * ref, bool stack) {
+	if (!ref) return; // Do nothing if ref is null
 	if (stack) {
 		// If there is an entry in the reference-count map, increment it
 		if (stackrefcount.count(ref) > 0) stackrefcount[ref]++;
@@ -53,6 +54,7 @@ size_t GarbageCollector::RandNext(size_t max) {
 }
 
 void GarbageCollector::DecrementRefCount(HeapObject * ref, bool stack) {
+	if (!ref) return; // Do nothing if ref is null
 	if (stack) {
 		// If there is an entry in the reference-count map, decrement it
 		if (stackrefcount.count(ref) > 0) {

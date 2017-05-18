@@ -2,7 +2,7 @@
 #include "VirtualMachine.h"
 
 
-VirtualMachine::VirtualMachine() {
+VirtualMachine::VirtualMachine() : GC(new GarbageCollector()) {
 }
 
 

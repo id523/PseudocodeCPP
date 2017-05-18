@@ -147,6 +147,7 @@
     <ClInclude Include="HeapObject.forward.h" />
     <ClInclude Include="HeapObject.h" />
     <ClInclude Include="HeapObjectGetReferences.h" />
+    <ClInclude Include="InstructionIndex.h" />
     <ClInclude Include="InstructionType.h" />
     <ClInclude Include="RuntimeError.h" />
     <ClInclude Include="PrimitiveObject.h" />
@@ -158,6 +159,7 @@
   <ItemGroup>
     <ClCompile Include="GarbageCollector.cpp" />
     <ClCompile Include="HeapObject.cpp" />
+    <ClCompile Include="InstructionIndex.cpp" />
     <ClCompile Include="RuntimeError.cpp" />
     <ClCompile Include="PrimitiveObject.cpp" />
     <ClCompile Include="PseudocodeCPP.cpp" />

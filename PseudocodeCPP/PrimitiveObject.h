@@ -1,8 +1,6 @@
 #pragma once
 
 #include <cstdint>
-#include <string>
-#include <utility>
 
 #include "PrimitiveType.h"
 #include "GarbageCollector.h"
@@ -27,6 +25,9 @@ public:
 	PrimitiveObject(const PrimitiveObject& other);
 	PrimitiveObject(PrimitiveObject&& other);
 	void swap(PrimitiveObject& r);
+	inline friend void swap(PrimitiveObject& a, PrimitiveObject& b) {
+		a.swap(b);
+	}
 	PrimitiveObject& operator=(PrimitiveObject other);
 	PrimitiveObject& operator=(PrimitiveObject&& other);
 	~PrimitiveObject();
