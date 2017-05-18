@@ -34,8 +34,9 @@ void InstructionIndex::swap(InstructionIndex & r) {
 	swap(Offset, r.Offset);
 }
 
-InstructionIndex & InstructionIndex::operator=(InstructionIndex other) {
-	swap(other);
+InstructionIndex & InstructionIndex::operator=(const InstructionIndex& other) {
+	InstructionIndex othercopy(other);
+	swap(othercopy);
 	return *this;
 }
 

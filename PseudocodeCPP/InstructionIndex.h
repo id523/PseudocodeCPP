@@ -22,7 +22,7 @@ public:
 	inline friend void swap(InstructionIndex& a, InstructionIndex& b) {
 		a.swap(b);
 	}
-	InstructionIndex& operator=(InstructionIndex other);
+	InstructionIndex& operator=(const InstructionIndex& other);
 	InstructionIndex& operator=(InstructionIndex&& other);
 	GarbageCollector* GetGarbageCollector() const;
 	void SetGCAndNull(GarbageCollector* gc);

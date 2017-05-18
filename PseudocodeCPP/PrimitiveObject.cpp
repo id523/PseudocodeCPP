@@ -71,8 +71,9 @@ void PrimitiveObject::swap(PrimitiveObject & r) {
 	swap(Data, r.Data);
 }
 
-PrimitiveObject & PrimitiveObject::operator=(PrimitiveObject other) {
-	this->swap(other);
+PrimitiveObject & PrimitiveObject::operator=(const PrimitiveObject& other) {
+	PrimitiveObject othercopy(other);
+	this->swap(othercopy);
 	return *this;
 }
 

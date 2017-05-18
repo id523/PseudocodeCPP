@@ -29,7 +29,7 @@ public:
 	inline friend void swap(PrimitiveObject& a, PrimitiveObject& b) {
 		a.swap(b);
 	}
-	PrimitiveObject& operator=(PrimitiveObject other);
+	PrimitiveObject& operator=(const PrimitiveObject& other);
 	PrimitiveObject& operator=(PrimitiveObject&& other);
 	~PrimitiveObject();
 	PrimitiveType GetType() const;
