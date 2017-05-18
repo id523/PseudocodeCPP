@@ -8,7 +8,7 @@ InstructionIndex::InstructionIndex() :
 InstructionIndex::InstructionIndex(GarbageCollector * gc) : 
 	GC(gc), FunctionRef(nullptr), Offset(0) {}
 
-InstructionIndex::InstructionIndex(GarbageCollector * gc, HeapObject* funcref, size_t offset) {
+InstructionIndex::InstructionIndex(GarbageCollector * gc, const HeapObject* funcref, size_t offset) {
 	GC = gc;
 	if (GC) GC->IncrementRefCount(funcref, true);
 	FunctionRef = funcref;
@@ -55,7 +55,7 @@ void InstructionIndex::SetGCAndNull(GarbageCollector * gc) {
 	GC = gc;
 }
 
-void InstructionIndex::Jump(HeapObject * funcref, size_t offset) {
+void InstructionIndex::Jump(const HeapObject * funcref, size_t offset) {
 	// FunctionRef != funcref not necessary for correctness but avoids calling expensive GC functions
 	bool doGC = GC && FunctionRef != funcref;
 	if (doGC) {

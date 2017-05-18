@@ -53,6 +53,16 @@ PrimitiveObject::PrimitiveObject(PrimitiveObject && other) {
 	other.Type = ObjType_Null;
 }
 
+PrimitiveObject::PrimitiveObject(const PrimitiveObject & other, bool weakRef) {
+	Type = other.Type;
+	GC = weakRef ? nullptr : other.GC;
+	OnStack = other.OnStack;
+	if (GC && other.Type == ObjType_HeapObj) {
+		GC->IncrementRefCount(other.Data.RefValue, OnStack);
+	}
+	Data = other.Data;
+}
+
 void PrimitiveObject::swap(PrimitiveObject & r) {
 	using std::swap;
 	swap(Type, r.Type);

@@ -7,8 +7,8 @@
 class HeapObject {
 private:
 	std::vector<byte> Code;
-	std::map<std::string, PrimitiveObject> Members;
 public:
+	std::map<std::string, PrimitiveObject> Members;
 	HeapObject();
 	~HeapObject();
 	template<class ByteIterator> void AppendCode(ByteIterator begin, ByteIterator end);

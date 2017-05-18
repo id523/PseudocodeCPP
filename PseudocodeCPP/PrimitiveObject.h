@@ -24,6 +24,7 @@ public:
 	PrimitiveObject(GarbageCollector* gc);
 	PrimitiveObject(const PrimitiveObject& other);
 	PrimitiveObject(PrimitiveObject&& other);
+	PrimitiveObject(const PrimitiveObject& other, bool weakRef);
 	void swap(PrimitiveObject& r);
 	inline friend void swap(PrimitiveObject& a, PrimitiveObject& b) {
 		a.swap(b);

@@ -14,7 +14,7 @@ GarbageCollector::GarbageCollector() {
 GarbageCollector::~GarbageCollector() {
 }
 
-void GarbageCollector::IncrementRefCount(HeapObject * ref, bool stack) {
+void GarbageCollector::IncrementRefCount(const HeapObject * ref, bool stack) {
 	if (!ref) return; // Do nothing if ref is null
 	if (stack) {
 		// If there is an entry in the reference-count map, increment it
@@ -29,7 +29,7 @@ void GarbageCollector::IncrementRefCount(HeapObject * ref, bool stack) {
 	else totalrefcount[ref] = 1;
 }
 
-bool GarbageCollector::DecrementWithoutCollect(HeapObject * ref) {
+bool GarbageCollector::DecrementWithoutCollect(const HeapObject * ref) {
 	// If there is an entry in the reference-count map, decrement it
 	if (totalrefcount.count(ref) > 0) {
 		totalrefcount[ref]--;
@@ -53,7 +53,7 @@ size_t GarbageCollector::RandNext(size_t max) {
 	return (size_t)((randstate >> 16) % max);
 }
 
-void GarbageCollector::DecrementRefCount(HeapObject * ref, bool stack) {
+void GarbageCollector::DecrementRefCount(const HeapObject * ref, bool stack) {
 	if (!ref) return; // Do nothing if ref is null
 	if (stack) {
 		// If there is an entry in the reference-count map, decrement it
@@ -84,7 +84,7 @@ void GarbageCollector::FastCollect() {
 	// While there are objects to clean up,
 	while (!objects.empty()) {
 		// pick an object to clean up
-		HeapObject* obj = Pick(objects);
+		const HeapObject* obj = Pick(objects);
 		// Decrement its reference count
 		bool doDeallocate = DecrementWithoutCollect(obj);
 		// If the reference count reaches zero,
@@ -98,9 +98,9 @@ void GarbageCollector::FastCollect() {
 
 void GarbageCollector::SlowCollect() {
 	FastCollect();
-	std::unordered_set<HeapObject*> whiteSet; // Objects which have not been referenced yet
-	std::vector<HeapObject*> grayList; // Objects to check for referencing
-	std::vector<HeapObject*> referenceList; // Temporarily stores the references each object has
+	std::unordered_set<const HeapObject*> whiteSet; // Objects which have not been referenced yet
+	std::vector<const HeapObject*> grayList; // Objects to check for referencing
+	std::vector<const HeapObject*> referenceList; // Temporarily stores the references each object has
 	// Get set of all known objects into whiteSet
 	for (const auto& kvp : totalrefcount) {
 		whiteSet.insert(kvp.first);
@@ -114,11 +114,11 @@ void GarbageCollector::SlowCollect() {
 	// Remove objects from the white set if they are accessible from the gray list
 	while (!grayList.empty()) {
 		// Take an object out of the gray list
-		HeapObject* grayObj = Pick(grayList);
+		const HeapObject* grayObj = Pick(grayList);
 		// Get objects that are referenced by it
 		referenceList.clear();
 		GetReferencedObjects(*grayObj, referenceList);
-		for (HeapObject* referencedObj : referenceList) {
+		for (const HeapObject* referencedObj : referenceList) {
 			// If the object is in the white set, move it to the gray list
 			if (whiteSet.erase(referencedObj)) {
 				grayList.push_back(referencedObj);
@@ -126,12 +126,12 @@ void GarbageCollector::SlowCollect() {
 		}
 	}
 	// Free all objects in the white set
-	for (HeapObject* whiteObj : whiteSet) {
+	for (const HeapObject* whiteObj : whiteSet) {
 		// Get all objects referenced by white objects
 		referenceList.clear();
 		GetReferencedObjects(*whiteObj, referenceList);
 		// For each referenced object
-		for (HeapObject* referencedObj : referenceList) {
+		for (const HeapObject* referencedObj : referenceList) {
 			// If it is not in the white set, reduce the reference count
 			if (whiteSet.count(referencedObj) <= 0) {
 				DecrementWithoutCollect(referencedObj);
