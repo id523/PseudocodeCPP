@@ -2,35 +2,39 @@
 #include "InstructionIndex.h"
 
 InstructionIndex::InstructionIndex() : 
-	GC(nullptr), FunctionRef(nullptr), Offset(0) {}
+	GC(nullptr), FunctionRef(nullptr), FunctionPos(0) {}
 
 InstructionIndex::InstructionIndex(GarbageCollector * gc) : 
-	GC(gc), FunctionRef(nullptr), Offset(0) {}
+	GC(gc), FunctionRef(nullptr), FunctionPos(0) {}
 
-InstructionIndex::InstructionIndex(GarbageCollector * gc, const HeapObject* funcref, size_t offset) {
+InstructionIndex::InstructionIndex(GarbageCollector * gc, const HeapObject* funcref, size_t pos) {
 	GC = gc;
 	if (GC) GC->IncrementRefCount(funcref, true);
 	FunctionRef = funcref;
-	Offset = offset;
+	FunctionPos = pos;
 }
 
 InstructionIndex::InstructionIndex(const InstructionIndex & other) {
 	GC = other.GC;
 	if (GC) GC->IncrementRefCount(other.FunctionRef, true);
 	FunctionRef = other.FunctionRef;
-	Offset = other.Offset;
+	FunctionPos = other.FunctionPos;
 }
 
 InstructionIndex::InstructionIndex(InstructionIndex && other) :
-	GC(nullptr), FunctionRef(nullptr), Offset(0) {
+	GC(nullptr), FunctionRef(nullptr), FunctionPos(0) {
 	swap(other);
+}
+
+InstructionIndex::~InstructionIndex() {
+	if (GC) GC->DecrementRefCount(FunctionRef, true);
 }
 
 void InstructionIndex::swap(InstructionIndex & r) {
 	using std::swap;
 	swap(GC, r.GC);
 	swap(FunctionRef, r.FunctionRef);
-	swap(Offset, r.Offset);
+	swap(FunctionPos, r.FunctionPos);
 }
 
 InstructionIndex & InstructionIndex::operator=(const InstructionIndex& other) {
@@ -51,11 +55,11 @@ GarbageCollector * InstructionIndex::GetGarbageCollector() const {
 void InstructionIndex::SetGCAndNull(GarbageCollector * gc) {
 	if (GC) GC->DecrementRefCount(FunctionRef, true);
 	FunctionRef = nullptr;
-	Offset = 0;
+	FunctionPos = 0;
 	GC = gc;
 }
 
-void InstructionIndex::Jump(const HeapObject * funcref, size_t offset) {
+void InstructionIndex::Jump(const HeapObject * funcref, size_t pos) {
 	// FunctionRef != funcref not necessary for correctness but avoids calling expensive GC functions
 	bool doGC = GC && FunctionRef != funcref;
 	if (doGC) {
@@ -64,7 +68,7 @@ void InstructionIndex::Jump(const HeapObject * funcref, size_t offset) {
 		GC->IncrementRefCount(funcref, true);
 	}
 	FunctionRef = funcref;
-	Offset = offset;
+	FunctionPos = pos;
 	if (doGC) GC->Resume();
 }
 
@@ -73,13 +77,13 @@ InstructionIndex & InstructionIndex::operator=(const HeapObject * funcref) {
 	return *this;
 }
 
-InstructionIndex & InstructionIndex::operator=(size_t offset) {
-	Offset = offset;
+InstructionIndex & InstructionIndex::operator=(size_t pos) {
+	FunctionPos = pos;
 	return *this;
 }
 
 InstructionIndex & InstructionIndex::operator++() {
-	++Offset;
+	++FunctionPos;
 	return *this;
 }
 
@@ -89,39 +93,44 @@ InstructionIndex InstructionIndex::operator++(int) {
 	return copy;
 }
 
-InstructionIndex & InstructionIndex::operator+=(size_t offset) {
-	Offset += offset;
+InstructionIndex & InstructionIndex::operator+=(int offset) {
+	FunctionPos += offset;
 	return *this;
 }
 
 byte InstructionIndex::operator*() {
 	if (!FunctionRef) return 0;
-	return FunctionRef->GetCodeAt(Offset);
+	return FunctionRef->GetCodeAt(FunctionPos);
 }
 
 byte InstructionIndex::ReadByte() {
 	if (!FunctionRef) return 0;
-	return FunctionRef->GetCodeAt(Offset++);
+	return FunctionRef->GetCodeAt(FunctionPos++);
 }
 
-size_t InstructionIndex::ReadOffset() {
+byte InstructionIndex::ReadRelative(int delta) {
 	if (!FunctionRef) return 0;
-	size_t result = FunctionRef->GetCodeAt(Offset);
-	result <<= 8; result |= FunctionRef->GetCodeAt(Offset + 1);
-	result <<= 8; result |= FunctionRef->GetCodeAt(Offset + 2);
-	result <<= 8; result |= FunctionRef->GetCodeAt(Offset + 3);
-	Offset += 4;
+	return FunctionRef->GetCodeAt(FunctionPos + delta);
+}
+
+size_t InstructionIndex::ReadPosition() {
+	if (!FunctionRef) return 0;
+	size_t result = FunctionRef->GetCodeAt(FunctionPos);
+	result <<= 8; result |= FunctionRef->GetCodeAt(FunctionPos + 1);
+	result <<= 8; result |= FunctionRef->GetCodeAt(FunctionPos + 2);
+	result <<= 8; result |= FunctionRef->GetCodeAt(FunctionPos + 3);
+	FunctionPos += 4;
 	return result;
 }
 
 uint64_t InstructionIndex::ReadUnsignedInteger() {
 	if (!FunctionRef) return 0;
-	uint64_t result = FunctionRef->GetCodeAt(Offset);
+	uint64_t result = FunctionRef->GetCodeAt(FunctionPos);
 	for (int i = 1; i < 8; i++) {
 		result <<= 8;
-		result |= FunctionRef->GetCodeAt(Offset + i);
+		result |= FunctionRef->GetCodeAt(FunctionPos + i);
 	}
-	Offset += 8;
+	FunctionPos += 8;
 	return result;
 }
 
@@ -137,11 +146,11 @@ double InstructionIndex::ReadDouble() {
 
 std::string InstructionIndex::ReadString() {
 	if (!FunctionRef) return std::string();
-	size_t length = FunctionRef->GetCodeAt(Offset++);
+	size_t length = FunctionRef->GetCodeAt(FunctionPos++);
 	std::string result;
 	result.reserve(length);
 	for (size_t i = 0; i < length; i++) {
-		result.push_back(FunctionRef->GetCodeAt(Offset++));
+		result.push_back(FunctionRef->GetCodeAt(FunctionPos++));
 	}
 	return result;
 }
@@ -156,8 +165,4 @@ void InstructionIndex::SuspendGC() {
 
 void InstructionIndex::ResumeGC() {
 	if (GC) GC->Resume();
-}
-
-InstructionIndex::~InstructionIndex() {
-	if (GC) GC->DecrementRefCount(FunctionRef, true);
 }

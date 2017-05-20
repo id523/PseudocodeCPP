@@ -16,12 +16,13 @@ private:
 	GarbageCollector* GC;
 	const HeapObject* FunctionRef;
 public:
-	size_t Offset;
+	size_t FunctionPos;
 	InstructionIndex();
 	InstructionIndex(GarbageCollector* gc);
-	InstructionIndex(GarbageCollector* gc, const HeapObject* funcref, size_t offset);
+	InstructionIndex(GarbageCollector* gc, const HeapObject* funcref, size_t pos);
 	InstructionIndex(const InstructionIndex& other);
 	InstructionIndex(InstructionIndex&& other);
+	~InstructionIndex();
 	void swap(InstructionIndex& r);
 	inline friend void swap(InstructionIndex& a, InstructionIndex& b) {
 		a.swap(b);
@@ -30,15 +31,16 @@ public:
 	InstructionIndex& operator=(InstructionIndex&& other);
 	GarbageCollector* GetGarbageCollector() const;
 	void SetGCAndNull(GarbageCollector* gc);
-	void Jump(const HeapObject* funcref, size_t offset);
+	void Jump(const HeapObject* funcref, size_t pos);
 	InstructionIndex& operator=(const HeapObject* funcref);
-	InstructionIndex& operator=(size_t offset);
+	InstructionIndex& operator=(size_t pos);
 	InstructionIndex& operator++();
 	InstructionIndex operator++(int);
-	InstructionIndex& operator+=(size_t offset);
+	InstructionIndex& operator+=(int offset);
 	byte operator*();
 	byte ReadByte();
-	size_t ReadOffset();
+	byte ReadRelative(int offset);
+	size_t ReadPosition();
 	uint64_t ReadUnsignedInteger();
 	int64_t ReadInteger();
 	double ReadDouble();
@@ -46,6 +48,5 @@ public:
 	const HeapObject* GetFunctionRef();
 	void SuspendGC();
 	void ResumeGC();
-	~InstructionIndex();
 };
 
