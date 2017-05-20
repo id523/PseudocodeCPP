@@ -8,7 +8,7 @@
 
 // This will create a division-by-zero if double is not eight bytes in size
 enum CheckDoublesRightSize {
-	DoublesRightSize = 1 / (sizeof(double) == 8)
+	DoublesRightSize = sizeof(double) == 8 ? 1 : 1 / 0
 };
 
 class InstructionIndex {
@@ -34,7 +34,7 @@ public:
 	InstructionIndex& operator=(const HeapObject* funcref);
 	InstructionIndex& operator=(size_t offset);
 	InstructionIndex& operator++();
-	InstructionIndex& operator++(int);
+	InstructionIndex operator++(int);
 	InstructionIndex& operator+=(size_t offset);
 	byte operator*();
 	byte ReadByte();

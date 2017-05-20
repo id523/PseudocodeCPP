@@ -83,7 +83,7 @@ InstructionIndex & InstructionIndex::operator++() {
 	return *this;
 }
 
-InstructionIndex & InstructionIndex::operator++(int) {
+InstructionIndex InstructionIndex::operator++(int) {
 	InstructionIndex copy = *this;
 	++*this;
 	return copy;
