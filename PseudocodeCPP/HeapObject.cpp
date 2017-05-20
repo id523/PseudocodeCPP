@@ -22,7 +22,7 @@ byte HeapObject::GetCodeAt(size_t pos) const {
 void GetReferencedObjects(const HeapObject& obj, std::vector<const HeapObject*>& objqueue) {
 	for (const auto& item : obj.Members) {
 		if (item.second.GetType() == ObjType_HeapObj) {
-			objqueue.push_back(item.second.GetHeapObjectValue());
+			objqueue.push_back((HeapObject*)item.second);
 		}
 	}
 }

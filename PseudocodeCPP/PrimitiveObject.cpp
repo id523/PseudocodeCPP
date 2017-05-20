@@ -135,17 +135,17 @@ bool PrimitiveObject::IsNull() const {
 	return Type == ObjType_Null;
 }
 
-PrimitiveType PrimitiveObject::GetTypeValue() const {
+PrimitiveObject::operator PrimitiveType() const {
 	if (Type == ObjType_Type) return Data.TypeValue;
 	else throw TypeConvertError(Type, ObjType_Type);
 }
 
-bool PrimitiveObject::GetBoolValue() const {
+PrimitiveObject::operator bool() const {
 	if (Type == ObjType_Bool) return Data.BoolValue;
 	else throw TypeConvertError(Type, ObjType_Bool);
 }
 
-int64_t PrimitiveObject::GetIntValue() const {
+PrimitiveObject::operator int64_t() const {
 	switch (Type) {
 	case ObjType_Int: return Data.IntValue;
 	case ObjType_Type: return (int64_t)Data.TypeValue;
@@ -153,7 +153,7 @@ int64_t PrimitiveObject::GetIntValue() const {
 	}
 }
 
-double PrimitiveObject::GetRealValue() const {
+PrimitiveObject::operator double() const {
 	switch (Type) {
 	case ObjType_Int: return (double)Data.IntValue;
 	case ObjType_Type: return (double)Data.TypeValue;
@@ -162,8 +162,9 @@ double PrimitiveObject::GetRealValue() const {
 	}
 }
 
-HeapObject* PrimitiveObject::GetHeapObjectValue() const {
-	if (Type == ObjType_HeapObj) return Data.RefValue;
+PrimitiveObject::operator HeapObject*() const {
+	if (Type == ObjType_Null) return nullptr;
+	else if (Type == ObjType_HeapObj) return Data.RefValue;
 	else throw TypeConvertError(Type, ObjType_HeapObj);
 }
 
@@ -171,35 +172,41 @@ GarbageCollector* PrimitiveObject::GetGarbageCollector() const {
 	return GC;
 }
 
-void PrimitiveObject::SetNull() {
+PrimitiveObject & PrimitiveObject::operator=(std::nullptr_t) {
 	DestroyValue();
+	return *this;
 }
 
-void PrimitiveObject::SetTypeValue(PrimitiveType t) {
+PrimitiveObject & PrimitiveObject::operator=(PrimitiveType t) {
 	DestroyValue();
 	Type = ObjType_Type;
 	Data.TypeValue = t;
+	return *this;
 }
 
-void PrimitiveObject::SetBoolValue(bool b) {
+PrimitiveObject & PrimitiveObject::operator=(bool b) {
 	DestroyValue();
 	Type = ObjType_Bool;
 	Data.BoolValue = b;
+	return *this;
 }
 
-void PrimitiveObject::SetIntValue(int64_t i) {
+PrimitiveObject & PrimitiveObject::operator=(int64_t i) {
 	DestroyValue();
 	Type = ObjType_Int;
 	Data.IntValue = i;
+	return *this;
 }
 
-void PrimitiveObject::SetRealValue(double d) {
+PrimitiveObject & PrimitiveObject::operator=(double d) {
 	DestroyValue();
 	Type = ObjType_Real;
 	Data.RealValue = d;
+	return *this;
 }
 
-void PrimitiveObject::SetHeapObjectValue(HeapObject* r) {
+PrimitiveObject & PrimitiveObject::operator=(HeapObject * r) {
+	if (!r) return *this = nullptr;
 	if (GC) GC->Suspend();
 	DestroyValue();
 	if (GC) {
@@ -208,6 +215,7 @@ void PrimitiveObject::SetHeapObjectValue(HeapObject* r) {
 	}
 	Type = ObjType_HeapObj;
 	Data.RefValue = r;
+	return *this;
 }
 
 void PrimitiveObject::SetGCAndNull(GarbageCollector * gc) {
