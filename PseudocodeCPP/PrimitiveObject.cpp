@@ -7,7 +7,7 @@
 
 RuntimeError TypeConvertError(PrimitiveType from, PrimitiveType to) {
 	std::ostringstream formatter;
-	formatter << "Conversion error: Unable to implicitly convert ";
+	formatter << "Conversion error: Unable to convert ";
 	formatter << TypeToString(from);
 	formatter << " to ";
 	formatter << TypeToString(to);
@@ -29,10 +29,10 @@ PrimitiveObject::PrimitiveObject() {
 	OnStack = false;
 }
 
-PrimitiveObject::PrimitiveObject(GarbageCollector * gc) {
+PrimitiveObject::PrimitiveObject(GarbageCollector * gc, bool onstack) {
 	Type = ObjType_Null;
 	GC = gc;
-	OnStack = false;
+	OnStack = onstack;
 }
 
 PrimitiveObject::PrimitiveObject(const PrimitiveObject & other) {
@@ -63,19 +63,40 @@ PrimitiveObject::PrimitiveObject(const PrimitiveObject & other, bool weakRef) {
 	Data = other.Data;
 }
 
-PrimitiveObject::PrimitiveObject(PrimitiveType typeValue, GarbageCollector * gc) {
+PrimitiveObject::PrimitiveObject(PrimitiveType typeValue, GarbageCollector* gc, bool onstack) {
+	Type = ObjType_Type;
+	Data.TypeValue = typeValue;
+	GC = gc;
+	OnStack = onstack;
 }
 
-PrimitiveObject::PrimitiveObject(bool boolValue, GarbageCollector * gc) {
+PrimitiveObject::PrimitiveObject(bool boolValue, GarbageCollector* gc, bool onstack) {
+	Type = ObjType_Bool;
+	Data.BoolValue = boolValue;
+	GC = gc;
+	OnStack = onstack;
 }
 
-PrimitiveObject::PrimitiveObject(int64_t intValue, GarbageCollector * gc) {
+PrimitiveObject::PrimitiveObject(int64_t intValue, GarbageCollector* gc, bool onstack) {
+	Type = ObjType_Int;
+	Data.IntValue = intValue;
+	GC = gc;
+	OnStack = onstack;
 }
 
-PrimitiveObject::PrimitiveObject(double realValue, GarbageCollector * gc) {
+PrimitiveObject::PrimitiveObject(double realValue, GarbageCollector* gc, bool onstack) {
+	Type = ObjType_Real;
+	Data.RealValue = realValue;
+	GC = gc;
+	OnStack = onstack;
 }
 
-PrimitiveObject::PrimitiveObject(HeapObject * refValue, GarbageCollector * gc) {
+PrimitiveObject::PrimitiveObject(HeapObject* refValue, GarbageCollector* gc, bool onstack) {
+	Type = ObjType_HeapObj;
+	Data.RefValue = refValue;
+    GC = gc;
+	OnStack = onstack;
+	if (GC) GC->IncrementRefCount(refValue, onstack);
 }
 
 void PrimitiveObject::swap(PrimitiveObject & r) {

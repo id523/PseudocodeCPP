@@ -19,15 +19,15 @@ private:
 	void DestroyValue();
 public:
 	PrimitiveObject();
-	PrimitiveObject(GarbageCollector* gc);
+	PrimitiveObject(GarbageCollector* gc, bool onstack = false);
 	PrimitiveObject(const PrimitiveObject& other);
 	PrimitiveObject(PrimitiveObject&& other);
 	PrimitiveObject(const PrimitiveObject& other, bool weakRef);
-	PrimitiveObject(PrimitiveType typeValue, GarbageCollector* gc = nullptr);
-	PrimitiveObject(bool boolValue, GarbageCollector* gc = nullptr);
-	PrimitiveObject(int64_t intValue, GarbageCollector* gc = nullptr);
-	PrimitiveObject(double realValue, GarbageCollector* gc = nullptr);
-	PrimitiveObject(HeapObject* refValue, GarbageCollector* gc = nullptr);
+	PrimitiveObject(PrimitiveType typeValue, GarbageCollector* gc = nullptr, bool onstack = false);
+	PrimitiveObject(bool boolValue, GarbageCollector* gc = nullptr, bool onstack = false);
+	PrimitiveObject(int64_t intValue, GarbageCollector* gc = nullptr, bool onstack = false);
+	PrimitiveObject(double realValue, GarbageCollector* gc = nullptr, bool onstack = false);
+	PrimitiveObject(HeapObject* refValue, GarbageCollector* gc = nullptr, bool onstack = false);
 	void swap(PrimitiveObject& r);
 	inline friend void swap(PrimitiveObject& a, PrimitiveObject& b) {
 		a.swap(b);

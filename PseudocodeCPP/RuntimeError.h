@@ -8,6 +8,7 @@ private:
 public:
 	RuntimeError();
 	RuntimeError(const char* message);
+	RuntimeError(const char* message, size_t length);
 	~RuntimeError();
 	const char* what() const;
 };
