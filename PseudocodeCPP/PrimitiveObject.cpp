@@ -63,6 +63,21 @@ PrimitiveObject::PrimitiveObject(const PrimitiveObject & other, bool weakRef) {
 	Data = other.Data;
 }
 
+PrimitiveObject::PrimitiveObject(PrimitiveType typeValue, GarbageCollector * gc) {
+}
+
+PrimitiveObject::PrimitiveObject(bool boolValue, GarbageCollector * gc) {
+}
+
+PrimitiveObject::PrimitiveObject(int64_t intValue, GarbageCollector * gc) {
+}
+
+PrimitiveObject::PrimitiveObject(double realValue, GarbageCollector * gc) {
+}
+
+PrimitiveObject::PrimitiveObject(HeapObject * refValue, GarbageCollector * gc) {
+}
+
 void PrimitiveObject::swap(PrimitiveObject & r) {
 	using std::swap;
 	swap(Type, r.Type);
