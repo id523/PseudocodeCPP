@@ -1,10 +1,8 @@
 #pragma once
-
-#include <cstdint>
-
-#include "PrimitiveType.h"
 #include "GarbageCollector.h"
 #include "HeapObject.forward.h"
+#include "PrimitiveType.h"
+#include <cstdint>
 
 class PrimitiveObject {
 private:

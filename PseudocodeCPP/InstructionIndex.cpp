@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "InstructionIndex.h"
 
-
 InstructionIndex::InstructionIndex() : 
 	GC(nullptr), FunctionRef(nullptr), Offset(0) {}
 

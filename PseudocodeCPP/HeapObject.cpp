@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "HeapObject.h"
-#include "InstructionType.h"
 
+#include "InstructionType.h"
 
 HeapObject::HeapObject() {
 }

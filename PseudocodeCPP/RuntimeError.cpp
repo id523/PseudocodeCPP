@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "RuntimeError.h"
 
-
 RuntimeError::RuntimeError() {
 	message = "An error occurred.";
 }
@@ -9,7 +8,6 @@ RuntimeError::RuntimeError() {
 RuntimeError::RuntimeError(const char * msg) {
 	message = msg;
 }
-
 
 RuntimeError::~RuntimeError() {
 }

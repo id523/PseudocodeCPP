@@ -1,9 +1,9 @@
 #include "stdafx.h"
-#include <string>
-#include <sstream>
-
 #include "PrimitiveObject.h"
+
 #include "RuntimeError.h"
+#include <sstream>
+#include <string>
 
 RuntimeError TypeConvertError(PrimitiveType from, PrimitiveType to) {
 	std::ostringstream formatter;

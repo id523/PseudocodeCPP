@@ -1,10 +1,10 @@
 #pragma once
-#include <stack>
-#include <memory>
-
 #include "GarbageCollector.h"
-#include "PrimitiveObject.h"
 #include "InstructionIndex.h"
+#include "PrimitiveObject.h"
+#include <memory>
+#include <stack>
+
 class VirtualMachine {
 private:
 	std::unique_ptr<GarbageCollector> _GC;

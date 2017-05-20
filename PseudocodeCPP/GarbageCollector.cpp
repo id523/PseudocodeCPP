@@ -1,11 +1,8 @@
 #include "stdafx.h"
-
-#include <unordered_set>
-
 #include "GarbageCollector.h"
+
 #include "RuntimeError.h"
-
-
+#include <unordered_set>
 
 GarbageCollector::GarbageCollector() {
 	randstate = 4283798574385720ui64;

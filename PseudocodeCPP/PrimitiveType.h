@@ -1,5 +1,4 @@
 #pragma once
-
 #include "Byte.h"
 
 enum PrimitiveType : byte {

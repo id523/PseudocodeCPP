@@ -1,9 +1,7 @@
 #pragma once
-
-#include <vector>
-#include <unordered_map>
-
 #include "HeapObjectGetReferences.h"
+#include <unordered_map>
+#include <vector>
 
 class GarbageCollector {
 private:

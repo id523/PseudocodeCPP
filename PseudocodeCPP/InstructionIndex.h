@@ -1,12 +1,10 @@
 #pragma once
-
-#include <utility>
-#include <cstdint>
-#include <string>
-
+#include "Byte.h"
 #include "GarbageCollector.h"
 #include "HeapObject.h"
-#include "Byte.h"
+#include <cstdint>
+#include <string>
+#include <utility>
 
 // This will create a division-by-zero if double is not eight bytes in size
 enum CheckDoublesRightSize {

@@ -1,9 +1,9 @@
 #pragma once
-#include <vector>
-#include <map>
-#include <string>
 #include "Byte.h"
 #include "PrimitiveObject.h"
+#include <map>
+#include <string>
+#include <vector>
 class HeapObject {
 private:
 	std::vector<byte> Code;
