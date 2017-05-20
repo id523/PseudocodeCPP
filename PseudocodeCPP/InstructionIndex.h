@@ -1,17 +1,23 @@
 #pragma once
 
 #include <utility>
+#include <cstdint>
+#include <string>
 
 #include "GarbageCollector.h"
 #include "HeapObject.h"
 #include "Byte.h"
+
+// This will create a division-by-zero if double is not eight bytes in size
+enum CheckDoublesRightSize {
+	DoublesRightSize = 1 / (sizeof(double) == 8)
+};
 
 class InstructionIndex {
 private:
 	GarbageCollector* GC;
 	const HeapObject* FunctionRef;
 public:
-	
 	size_t Offset;
 	InstructionIndex();
 	InstructionIndex(GarbageCollector* gc);
@@ -32,7 +38,14 @@ public:
 	InstructionIndex& operator++();
 	InstructionIndex& operator++(int);
 	InstructionIndex& operator+=(size_t offset);
-	byte& operator*();
+	byte operator*();
+	byte ReadByte();
+	size_t ReadOffset();
+	uint64_t ReadUnsignedInteger();
+	int64_t ReadInteger();
+	double ReadDouble();
+	std::string ReadString();
+	const HeapObject* GetFunctionRef();
 	void SuspendGC();
 	void ResumeGC();
 	~InstructionIndex();

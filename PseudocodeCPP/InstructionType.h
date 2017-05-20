@@ -3,6 +3,7 @@
 #include "Byte.h"
 
 enum InstructionType : byte {
+	// All sequences of bytes representing numbers are big-endian.
 	// FLOW CONTROL
 	Ret, // If the call stack is empty, exits the program. Otherwise, it pops an address from the call stack and jumps to it.
 	Call, // Pops (a pointer to) a function from the main stack, pushes the address of the instruction after the Call to the call stack, and jumps to the function pointer specified. 

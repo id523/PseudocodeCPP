@@ -69,6 +69,88 @@ void InstructionIndex::Jump(const HeapObject * funcref, size_t offset) {
 	if (doGC) GC->Resume();
 }
 
+InstructionIndex & InstructionIndex::operator=(const HeapObject * funcref) {
+	Jump(funcref, 0);
+	return *this;
+}
+
+InstructionIndex & InstructionIndex::operator=(size_t offset) {
+	Offset = offset;
+	return *this;
+}
+
+InstructionIndex & InstructionIndex::operator++() {
+	++Offset;
+	return *this;
+}
+
+InstructionIndex & InstructionIndex::operator++(int) {
+	InstructionIndex copy = *this;
+	++*this;
+	return copy;
+}
+
+InstructionIndex & InstructionIndex::operator+=(size_t offset) {
+	Offset += offset;
+	return *this;
+}
+
+byte InstructionIndex::operator*() {
+	if (!FunctionRef) return 0;
+	return FunctionRef->GetCodeAt(Offset);
+}
+
+byte InstructionIndex::ReadByte() {
+	if (!FunctionRef) return 0;
+	return FunctionRef->GetCodeAt(Offset++);
+}
+
+size_t InstructionIndex::ReadOffset() {
+	if (!FunctionRef) return 0;
+	size_t result = FunctionRef->GetCodeAt(Offset);
+	result <<= 8; result |= FunctionRef->GetCodeAt(Offset + 1);
+	result <<= 8; result |= FunctionRef->GetCodeAt(Offset + 2);
+	result <<= 8; result |= FunctionRef->GetCodeAt(Offset + 3);
+	Offset += 4;
+	return result;
+}
+
+uint64_t InstructionIndex::ReadUnsignedInteger() {
+	if (!FunctionRef) return 0;
+	uint64_t result = FunctionRef->GetCodeAt(Offset);
+	for (int i = 1; i < 8; i++) {
+		result <<= 8;
+		result |= FunctionRef->GetCodeAt(Offset + i);
+	}
+	Offset += 8;
+	return result;
+}
+
+int64_t InstructionIndex::ReadInteger() {
+	return (int64_t)ReadUnsignedInteger();
+}
+
+double InstructionIndex::ReadDouble() {
+	uint64_t intbits = ReadUnsignedInteger();
+	// Reinterpret the bit-pattern of the integer as if it was a double
+	return *(double*)&intbits;
+}
+
+std::string InstructionIndex::ReadString() {
+	if (!FunctionRef) return std::string();
+	size_t length = FunctionRef->GetCodeAt(Offset++);
+	std::string result;
+	result.reserve(length);
+	for (size_t i = 0; i < length; i++) {
+		result.push_back(FunctionRef->GetCodeAt(Offset++));
+	}
+	return result;
+}
+
+const HeapObject * InstructionIndex::GetFunctionRef() {
+	return FunctionRef;
+}
+
 void InstructionIndex::SuspendGC() {
 	if (GC) GC->Suspend();
 }

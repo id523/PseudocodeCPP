@@ -14,7 +14,7 @@ void HeapObject::ClearCode() {
 	Code.clear();
 }
 
-byte HeapObject::GetCodeAt(size_t pos) {
+byte HeapObject::GetCodeAt(size_t pos) const {
 	if (pos > Code.size()) return InstructionType::Ret;
 	return Code[pos];
 }

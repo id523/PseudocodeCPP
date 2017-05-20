@@ -13,7 +13,7 @@ public:
 	~HeapObject();
 	template<class ByteIterator> void AppendCode(ByteIterator begin, ByteIterator end);
 	void ClearCode();
-	byte GetCodeAt(size_t pos);
+	byte GetCodeAt(size_t pos) const;
 
 };
 

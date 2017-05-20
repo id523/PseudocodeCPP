@@ -7,14 +7,20 @@
 #include "InstructionIndex.h"
 class VirtualMachine {
 private:
-	std::unique_ptr<GarbageCollector> GC;
+	std::unique_ptr<GarbageCollector> _GC;
+	HeapObject* _GlobalObject;
+	void Step();
+public:
+	bool Completed;
+	InstructionIndex IP;
 	std::stack<PrimitiveObject> MainStack;
 	std::stack<InstructionIndex> CallStack;
-	InstructionIndex CurrentPosition;
-	HeapObject* GlobalObject;
-public:
 	VirtualMachine();
 	~VirtualMachine();
+	GarbageCollector* GC();
+	HeapObject* GlobalObject();
+	void Reset();
+	void Run();
 	// TODO:
 	// Ability to interpret machine code
 };
