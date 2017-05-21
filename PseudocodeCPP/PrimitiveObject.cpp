@@ -92,11 +92,15 @@ PrimitiveObject::PrimitiveObject(double realValue, GarbageCollector* gc, bool on
 }
 
 PrimitiveObject::PrimitiveObject(HeapObject* refValue, GarbageCollector* gc, bool onstack) {
-	Type = ObjType_HeapObj;
-	Data.RefValue = refValue;
-    GC = gc;
+	GC = gc;
 	OnStack = onstack;
-	if (GC) GC->IncrementRefCount(refValue, onstack);
+	if (refValue) {
+		Type = ObjType_HeapObj;
+		Data.RefValue = refValue;
+		if (GC) GC->IncrementRefCount(refValue, onstack);
+	} else {
+		Type = ObjType_Null;
+	}
 }
 
 void PrimitiveObject::swap(PrimitiveObject & r) {
@@ -115,11 +119,7 @@ PrimitiveObject & PrimitiveObject::operator=(const PrimitiveObject& other) {
 
 PrimitiveObject & PrimitiveObject::operator=(PrimitiveObject && other) {
 	DestroyValue();
-	Type = other.Type;
-	GC = other.GC;
-	OnStack = other.OnStack;
-	Data = other.Data;
-	other.Type = ObjType_Null;
+	this->swap(other);
 	return *this;
 }
 
