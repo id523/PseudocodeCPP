@@ -7,20 +7,19 @@ VirtualMachine::VirtualMachine() : _GC(new GarbageCollector()), Completed(false)
 	IP = InstructionIndex(_GC.get(), _GlobalObject, 0);
 }
 
-GarbageCollector* VirtualMachine::GC() {
+GarbageCollector* VirtualMachine::GetGC() {
 	return _GC.get();
 }
 
-HeapObject* VirtualMachine::GlobalObject() {
+HeapObject* VirtualMachine::GetGlobalObject() {
 	return _GlobalObject;
 }
 
 void VirtualMachine::Reset() {
-	IP = _GlobalObject;
-}
-
-void VirtualMachine::Step() {
-
+	IP.Jump(_GlobalObject);
+	while (!MainStack.empty()) MainStack.pop();
+	while (!CallStack.empty()) CallStack.pop();
+	_GC->SlowCollect();
 }
 
 void VirtualMachine::Run() {

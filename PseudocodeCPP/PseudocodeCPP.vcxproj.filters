@@ -54,10 +54,10 @@
     <ClInclude Include="InstructionIndex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PrimitiveObjectOperators.h">
+    <ClInclude Include="PrimitiveObject.forward.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PrimitiveObject.forward.h">
+    <ClInclude Include="ObjOperations.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -86,7 +86,10 @@
     <ClCompile Include="InstructionIndex.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PrimitiveObjectOperators.cpp">
+    <ClCompile Include="VirtualMachineStep.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjOperations.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

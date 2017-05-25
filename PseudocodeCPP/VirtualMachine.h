@@ -17,8 +17,8 @@ public:
 	std::stack<InstructionIndex> CallStack;
 	VirtualMachine();
 	~VirtualMachine();
-	GarbageCollector* GC();
-	HeapObject* GlobalObject();
+	GarbageCollector* GetGC();
+	HeapObject* GetGlobalObject();
 	void Reset();
 	void Run();
 	// TODO:

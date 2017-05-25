@@ -72,14 +72,12 @@ void InstructionIndex::Jump(const HeapObject * funcref, size_t pos) {
 	if (doGC) GC->Resume();
 }
 
-InstructionIndex & InstructionIndex::operator=(const HeapObject * funcref) {
+void InstructionIndex::Jump(const HeapObject * funcref) {
 	Jump(funcref, 0);
-	return *this;
 }
 
-InstructionIndex & InstructionIndex::operator=(size_t pos) {
+void InstructionIndex::Jump(size_t pos) {
 	FunctionPos = pos;
-	return *this;
 }
 
 InstructionIndex & InstructionIndex::operator++() {
@@ -94,11 +92,28 @@ InstructionIndex InstructionIndex::operator++(int) {
 }
 
 InstructionIndex & InstructionIndex::operator+=(int offset) {
-	FunctionPos += offset;
+	if (-offset > FunctionPos) FunctionPos = 0;
+	else FunctionPos += offset;
 	return *this;
 }
 
-byte InstructionIndex::operator*() {
+InstructionIndex & InstructionIndex::operator-=(int offset) {
+	return *this += -offset;
+}
+
+InstructionIndex InstructionIndex::operator+(int offset) {
+	InstructionIndex copy = *this;
+	copy += offset;
+	return copy;
+}
+
+InstructionIndex InstructionIndex::operator-(int offset) {
+	InstructionIndex copy = *this;
+	copy -= offset;
+	return copy;
+}
+
+byte InstructionIndex::PeekByte() {
 	if (!FunctionRef) return 0;
 	return FunctionRef->GetCodeAt(FunctionPos);
 }
@@ -106,11 +121,6 @@ byte InstructionIndex::operator*() {
 byte InstructionIndex::ReadByte() {
 	if (!FunctionRef) return 0;
 	return FunctionRef->GetCodeAt(FunctionPos++);
-}
-
-byte InstructionIndex::ReadRelative(int delta) {
-	if (!FunctionRef) return 0;
-	return FunctionRef->GetCodeAt(FunctionPos + delta);
 }
 
 size_t InstructionIndex::ReadPosition() {

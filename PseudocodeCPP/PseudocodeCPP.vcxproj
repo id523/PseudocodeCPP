@@ -150,7 +150,7 @@
     <ClInclude Include="InstructionIndex.h" />
     <ClInclude Include="InstructionType.h" />
     <ClInclude Include="PrimitiveObject.forward.h" />
-    <ClInclude Include="PrimitiveObjectOperators.h" />
+    <ClInclude Include="ObjOperations.h" />
     <ClInclude Include="RuntimeError.h" />
     <ClInclude Include="PrimitiveObject.h" />
     <ClInclude Include="PrimitiveType.h" />
@@ -162,7 +162,7 @@
     <ClCompile Include="GarbageCollector.cpp" />
     <ClCompile Include="HeapObject.cpp" />
     <ClCompile Include="InstructionIndex.cpp" />
-    <ClCompile Include="PrimitiveObjectOperators.cpp" />
+    <ClCompile Include="ObjOperations.cpp" />
     <ClCompile Include="RuntimeError.cpp" />
     <ClCompile Include="PrimitiveObject.cpp" />
     <ClCompile Include="PseudocodeCPP.cpp" />
@@ -173,6 +173,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="VirtualMachine.cpp" />
+    <ClCompile Include="VirtualMachineStep.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

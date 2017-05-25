@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "PrimitiveObjectOperators.h"
+#include "ObjOperations.h"
 #include "HeapObject.h"
 #include "PrimitiveObject.h"
 #include "RuntimeError.h"
@@ -90,16 +90,20 @@ void ObjOperations::NumGeq(PrimitiveObject & x, const PrimitiveObject & y) {
 	x = NumCompare(x, y) >= 0;
 }
 
-void ObjOperations::IntAdd(PrimitiveObject & x, const PrimitiveObject & y) {
-	x = (int64_t)x + (int64_t)y;
+void ObjOperations::Add(PrimitiveObject & x, const PrimitiveObject & y) {
+	// TODO
 }
 
-void ObjOperations::IntSub(PrimitiveObject & x, const PrimitiveObject & y) {
-	x = (int64_t)x - (int64_t)y;
+void ObjOperations::Sub(PrimitiveObject & x, const PrimitiveObject & y) {
+	// TODO
 }
 
-void ObjOperations::IntMul(PrimitiveObject & x, const PrimitiveObject & y) {
-	x = (int64_t)x * (int64_t)y;
+void ObjOperations::Mul(PrimitiveObject & x, const PrimitiveObject & y) {
+	// TODO
+}
+
+void ObjOperations::Neg(PrimitiveObject & x) {
+	// TODO
 }
 
 void ObjOperations::IntDiv(PrimitiveObject & x, const PrimitiveObject & y) {
@@ -115,22 +119,6 @@ void ObjOperations::IntMod(PrimitiveObject & x, const PrimitiveObject & y) {
 	else x = (int64_t)x % denominator;
 }
 
-void ObjOperations::IntNeg(PrimitiveObject & x) {
-	x = -(int64_t)x;
-}
-
-void ObjOperations::RealAdd(PrimitiveObject & x, const PrimitiveObject & y) {
-	x = (double)x + (double)y;
-}
-
-void ObjOperations::RealSub(PrimitiveObject & x, const PrimitiveObject & y) {
-	x = (double)x - (double)y;
-}
-
-void ObjOperations::RealMul(PrimitiveObject & x, const PrimitiveObject & y) {
-	x = (double)x * (double)y;
-}
-
 void ObjOperations::RealDiv(PrimitiveObject & x, const PrimitiveObject & y) {
 	x = (double)x / (double)y;
 }
@@ -142,8 +130,12 @@ void ObjOperations::RealMod(PrimitiveObject & x, const PrimitiveObject & y) {
 	else x = fmod(x, denominator);
 }
 
-void ObjOperations::RealNeg(PrimitiveObject & x) {
-	x = -(double)x;
+void ObjOperations::ToInt(PrimitiveObject & x) {
+	// TODO
+}
+
+void ObjOperations::ToReal(PrimitiveObject & x) {
+	// TODO
 }
 
 void ObjOperations::GetMember(PrimitiveObject & x, const std::string & memberName) {
