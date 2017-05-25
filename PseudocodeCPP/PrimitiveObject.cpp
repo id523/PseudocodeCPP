@@ -7,7 +7,7 @@
 
 RuntimeError TypeConvertError(PrimitiveType from, PrimitiveType to) {
 	std::ostringstream formatter;
-	formatter << "Conversion error: Unable to convert ";
+	formatter << "Unable to convert ";
 	formatter << TypeToString(from);
 	formatter << " to ";
 	formatter << TypeToString(to);
