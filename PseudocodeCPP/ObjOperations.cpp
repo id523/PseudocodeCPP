@@ -91,19 +91,19 @@ void ObjOperations::NumGeq(PrimitiveObject & x, const PrimitiveObject & y) {
 }
 
 void ObjOperations::Add(PrimitiveObject & x, const PrimitiveObject & y) {
-	// TODO
+	// TODO: Implement
 }
 
 void ObjOperations::Sub(PrimitiveObject & x, const PrimitiveObject & y) {
-	// TODO
+	// TODO: Implement
 }
 
 void ObjOperations::Mul(PrimitiveObject & x, const PrimitiveObject & y) {
-	// TODO
+	// TODO: Implement
 }
 
 void ObjOperations::Neg(PrimitiveObject & x) {
-	// TODO
+	// TODO: Implement
 }
 
 void ObjOperations::IntDiv(PrimitiveObject & x, const PrimitiveObject & y) {
@@ -131,11 +131,11 @@ void ObjOperations::RealMod(PrimitiveObject & x, const PrimitiveObject & y) {
 }
 
 void ObjOperations::ToInt(PrimitiveObject & x) {
-	// TODO
+	// TODO: Implement
 }
 
 void ObjOperations::ToReal(PrimitiveObject & x) {
-	// TODO
+	// TODO: Implement
 }
 
 void ObjOperations::GetMember(PrimitiveObject & x, const std::string & memberName) {

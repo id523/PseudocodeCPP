@@ -22,6 +22,7 @@ public:
 	void Resume(); // Undoes the effect of a matching Suspend(). If the garbage collector is completely unsuspended, this calls FastCollect().
 	void FastCollect(); // Frees all of the objects with a reference count of zero.
 	void SlowCollect(); // Frees all of the objects which are inaccessible.
+	void Clear(); // Frees all of the objects.
 };
 
 template<class T>

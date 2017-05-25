@@ -21,7 +21,5 @@ public:
 	HeapObject* GetGlobalObject();
 	void Reset();
 	void Run();
-	// TODO:
-	// Ability to interpret machine code
 };
 

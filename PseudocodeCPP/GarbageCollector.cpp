@@ -9,11 +9,7 @@ GarbageCollector::GarbageCollector() {
 }
 
 GarbageCollector::~GarbageCollector() {
-	for (auto& item : totalrefcount) {
-		DeleteObject(item.first);
-	}
-	totalrefcount.clear();
-	stackrefcount.clear();
+	Clear();
 }
 
 void GarbageCollector::IncrementRefCount(const HeapObject * ref, bool stack) {
@@ -141,4 +137,13 @@ void GarbageCollector::SlowCollect() {
 		}
 		DeleteObject(whiteObj);
 	}
+}
+
+void GarbageCollector::Clear() {
+	for (auto& item : totalrefcount) {
+		DeleteObject(item.first);
+	}
+	totalrefcount.clear();
+	stackrefcount.clear();
+	objects.clear();
 }

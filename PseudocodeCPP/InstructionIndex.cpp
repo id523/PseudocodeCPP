@@ -92,7 +92,7 @@ InstructionIndex InstructionIndex::operator++(int) {
 }
 
 InstructionIndex & InstructionIndex::operator+=(int offset) {
-	if (-offset > FunctionPos) FunctionPos = 0;
+	if (offset < 0 && (size_t)-offset > FunctionPos) FunctionPos = 0;
 	else FunctionPos += offset;
 	return *this;
 }

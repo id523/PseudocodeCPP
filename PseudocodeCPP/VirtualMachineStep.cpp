@@ -72,9 +72,8 @@ namespace VMOperations {
 		m.MainStack.push(m.IP.ReadDouble());
 	}
 	void CreateObject(VirtualMachine& m) {
-		PrimitiveObject newObj(m.GetGC(), true);
-		newObj = new HeapObject();
-		m.MainStack.push(std::move(newObj));
+		m.MainStack.emplace(m.GetGC(), true);
+		m.MainStack.top() = new HeapObject();
 	}
 }
 
@@ -118,10 +117,10 @@ void VirtualMachine::Step() {
 		case InstructionType::ToInt: VMOperations::MathOp(*this, ObjOperations::ToInt); break;
 		case InstructionType::ToReal: VMOperations::MathOp(*this, ObjOperations::ToReal); break;
 		case InstructionType::CreateObject: VMOperations::CreateObject(*this); break;
-			// TODO
+			// TODO: More opcodes
 		}
 	} catch (RuntimeError err) {
 		Completed = true;
-		// TODO
+		// TODO: Handle errors
 	}
 }
