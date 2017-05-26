@@ -151,5 +151,7 @@ void ObjOperations::GetMember(PrimitiveObject & x, const std::string & memberNam
 void ObjOperations::SetMember(PrimitiveObject & x, const std::string & memberName, const PrimitiveObject & v) {
 	HeapObject* obj = x;
 	if (!obj) throw RuntimeError("Cannot access members of a null value");
-	obj->Members[memberName] = v;
+	PrimitiveObject inserted = v;
+	inserted.SetOnStack(false);
+	obj->Members[memberName] = std::move(inserted);
 }

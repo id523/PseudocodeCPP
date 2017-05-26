@@ -6,21 +6,16 @@
 #include <vector>
 class HeapObject {
 private:
-	std::vector<byte> Code;
+	
 public:
+	std::vector<byte> Code;
+	bool IsCode;
 	std::map<std::string, PrimitiveObject> Members;
 	HeapObject();
 	~HeapObject();
-	template<class ByteIterator> void AppendCode(ByteIterator begin, ByteIterator end);
+	void Append(byte b);
 	void ClearCode();
+	void ClearText();
 	byte GetCodeAt(size_t pos) const;
 
 };
-
-template<class ByteIterator>
-inline void HeapObject::AppendCode(ByteIterator begin, ByteIterator end) {
-	while (begin != end) {
-		Code.push_back(*begin);
-		begin++;
-	}
-}

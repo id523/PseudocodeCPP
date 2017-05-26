@@ -18,7 +18,7 @@ HeapObject* VirtualMachine::GetGlobalObject() {
 void VirtualMachine::Reset() {
 	IP.Jump(_GlobalObject);
 	_GC->Suspend();
-	while (!MainStack.empty()) MainStack.pop();
+	while (!MainStack.empty()) MainStack.pop_back();
 	while (!CallStack.empty()) CallStack.pop();
 	_GC->Clear();
 	_GC->Resume();

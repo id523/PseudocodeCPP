@@ -3,13 +3,26 @@
 #include "InstructionType.h"
 #include "ObjOperations.h"
 #include "RuntimeError.h"
+#include <string>
 
 namespace VMOperations {
 	typedef void(*UnaryOperation)(PrimitiveObject& x);
 	typedef void(*BinaryOperation)(PrimitiveObject& x, const PrimitiveObject& y);
-	void EnsureStack(VirtualMachine& m, size_t items) {
-		if (m.MainStack.size() < items) 
-			throw RuntimeError("Too few items on stack. This means that there is a bug in the compiler");
+	size_t GetFramePointer(VirtualMachine& m) {
+		size_t FramePointer = 0;
+		if (!m.FrameStack.empty()) {
+			FramePointer = m.FrameStack.top();
+		}
+		return FramePointer;
+	}
+	void EnsureFrame(VirtualMachine& m, size_t framelength, size_t& FramePointer) {
+		FramePointer = GetFramePointer(m);
+		if (m.MainStack.size() < FramePointer + framelength) 
+			throw RuntimeError("Too few items in current stack frame. This is most likely caused by a bug in the compiler");
+	}
+	void EnsureFrame(VirtualMachine& m, size_t framelength) {
+		size_t FramePointer;
+		return EnsureFrame(m, framelength, FramePointer);
 	}
 	void Ret(VirtualMachine& m) {
 		if (m.CallStack.empty()) {
@@ -20,18 +33,20 @@ namespace VMOperations {
 		}
 	}
 	void NormalCall(VirtualMachine& m) {
-		EnsureStack(m, 1);
-		HeapObject* funcObj = m.MainStack.top();
-		m.MainStack.pop();
+		EnsureFrame(m, 1);
+		HeapObject* funcObj = m.MainStack.back();
 		if (!funcObj) throw RuntimeError("Unable to call null as a function");
+		if (!funcObj->IsCode) throw RuntimeError("Unable to run code from a non-executable object");
+		m.MainStack.pop_back();
 		m.CallStack.push(m.IP + 1);
 		m.IP.Jump(funcObj);
 	}
 	void TailCall(VirtualMachine& m) {
-		EnsureStack(m, 1);
-		HeapObject* funcObj = m.MainStack.top();
-		m.MainStack.pop();
+		EnsureFrame(m, 1);
+		HeapObject* funcObj = m.MainStack.back();
 		if (!funcObj) throw RuntimeError("Unable to call null as a function");
+		if (!funcObj->IsCode) throw RuntimeError("Unable to run code from a non-executable object");
+		m.MainStack.pop_back();
 		m.IP.Jump(funcObj);
 	}
 	void Jump(VirtualMachine& m) {
@@ -39,88 +54,236 @@ namespace VMOperations {
 		m.IP.Jump(pos);
 	}
 	void TrueJump(VirtualMachine& m) {
-		EnsureStack(m, 1);
+		EnsureFrame(m, 1);
 		size_t pos = m.IP.ReadPosition();
-		bool cond = m.MainStack.top();
-		m.MainStack.pop();
+		bool cond = m.MainStack.back();
+		m.MainStack.pop_back();
 		if (cond) m.IP.Jump(pos);
 	}
 	void FalseJump(VirtualMachine& m) {
-		EnsureStack(m, 1);
+		EnsureFrame(m, 1);
 		size_t pos = m.IP.ReadPosition();
-		bool cond = m.MainStack.top();
-		m.MainStack.pop();
+		bool cond = m.MainStack.back();
+		m.MainStack.pop_back();
 		if (!cond) m.IP.Jump(pos);
 	}
 	void MathOp(VirtualMachine& m, UnaryOperation op) {
-		EnsureStack(m, 1);
-		op(m.MainStack.top());
+		EnsureFrame(m, 1);
+		op(m.MainStack.back());
 	}
 	void MathOp(VirtualMachine& m, BinaryOperation op) {
-		EnsureStack(m, 2);
-		PrimitiveObject tmp = m.MainStack.top();
-		m.MainStack.pop();
-		op(m.MainStack.top(), tmp);
+		EnsureFrame(m, 2);
+		PrimitiveObject tmp = m.MainStack.back();
+		m.MainStack.pop_back();
+		try {
+			op(m.MainStack.back(), tmp);
+		} catch (RuntimeError err) {
+			m.MainStack.push_back(std::move(tmp));
+			throw err;
+		}
+	}
+	void Null(VirtualMachine& m) {
+		m.MainStack.emplace_back(m.GetGC(), true);
 	}
 	void Bool(VirtualMachine& m, bool v) {
-		m.MainStack.push(v);
+		m.MainStack.emplace_back(v, m.GetGC(), true);
 	}
 	void IntLiteral(VirtualMachine& m) {
-		m.MainStack.push(m.IP.ReadInteger());
+		m.MainStack.emplace_back(m.IP.ReadInteger(), m.GetGC(), true);
 	}
 	void RealLiteral(VirtualMachine& m) {
-		m.MainStack.push(m.IP.ReadDouble());
+		m.MainStack.emplace_back(m.IP.ReadDouble(), m.GetGC(), true);
+	}
+	void TypeLiteral(VirtualMachine& m) {
+		// TODO
 	}
 	void CreateObject(VirtualMachine& m) {
-		m.MainStack.emplace(m.GetGC(), true);
-		m.MainStack.top() = new HeapObject();
+		m.MainStack.emplace_back(m.GetGC(), true);
+		m.MainStack.back() = new HeapObject();
+	}
+	void ShallowCopy(VirtualMachine& m) {
+		EnsureFrame(m, 1);
+		if (m.MainStack.back().GetType() == ObjType_HeapObj) {
+			HeapObject* copy = new HeapObject(*(HeapObject*)m.MainStack.back());
+			m.MainStack.back() = copy;
+		}
+	}
+	void GetGlobalObject(VirtualMachine& m) {
+		m.MainStack.emplace_back(m.GetGlobalObject(), m.GetGC(), true);
+	}
+	void GetFunctionObject(VirtualMachine& m) {
+		m.MainStack.emplace_back(const_cast<HeapObject*>(m.IP.GetFunctionRef()), m.GetGC(), true);
+	}
+	void GetMember(VirtualMachine& m) {
+		EnsureFrame(m, 1);
+		size_t length = m.IP.ReadByte();
+		std::string memberName;
+		for (size_t i = 0; i < length; i++) {
+			memberName.push_back(m.IP.ReadByte());
+		}
+		ObjOperations::GetMember(m.MainStack.back(), memberName);
+	}
+	void SetMember(VirtualMachine& m) {
+		EnsureFrame(m, 2);
+		size_t length = m.IP.ReadByte();
+		std::string memberName;
+		for (size_t i = 0; i < length; i++) {
+			memberName.push_back(m.IP.ReadByte());
+		}
+		PrimitiveObject tmp = m.MainStack.back();
+		m.MainStack.pop_back();
+		try {
+			ObjOperations::SetMember(m.MainStack.back(), memberName, tmp);
+		} catch (RuntimeError err) {
+			m.MainStack.push_back(std::move(tmp));
+			throw err;
+		}
+	}
+	void PushFrame(VirtualMachine& m) {
+		size_t FrameSize = m.IP.ReadByte();
+		EnsureFrame(m, FrameSize);
+		m.FrameStack.push(m.MainStack.size() - FrameSize);
+	}
+	void PopFramePointer(VirtualMachine& m) {
+		if (!m.FrameStack.empty()) {
+			m.FrameStack.pop();
+		}
+	}
+	void PopFrame(VirtualMachine& m) {
+		size_t FrameSize = m.IP.ReadByte();
+		size_t FramePointer;
+		EnsureFrame(m, FrameSize, FramePointer);
+		PopFramePointer(m);
+		size_t FrameEnd = FramePointer + FrameSize;
+		while (m.MainStack.size() > FrameEnd) {
+			m.MainStack.pop_back();
+		}
+	}
+	void Pick(VirtualMachine& m) {
+		size_t IndexInFrame = m.IP.ReadByte();
+		size_t FramePointer;
+		EnsureFrame(m, IndexInFrame + 2, FramePointer);
+		size_t ItemIndex = FramePointer + IndexInFrame;
+		m.MainStack.push_back(m.MainStack.at(ItemIndex));
+	}
+	void Bury(VirtualMachine& m) {
+		size_t IndexInFrame = m.IP.ReadByte();
+		size_t FramePointer;
+		EnsureFrame(m, IndexInFrame + 2, FramePointer);
+		size_t ItemIndex = FramePointer + IndexInFrame;
+		m.MainStack.at(ItemIndex) = m.MainStack.back();
+		m.MainStack.pop_back();
+	}
+	void PopDiscard(VirtualMachine& m) {
+		EnsureFrame(m, 1);
+		m.MainStack.pop_back();
+	}
+	HeapObject* PopHeapObj(VirtualMachine& m) {
+		EnsureFrame(m, 1);
+		HeapObject* obj = m.MainStack.back();
+		if (!obj) throw RuntimeError("Unable to modify a null object");
+		m.MainStack.pop_back();
+		return obj;
+	}
+	void ClearCode(VirtualMachine& m) {
+		HeapObject* obj = PopHeapObj(m);
+		obj->ClearCode();
+	}
+	void ClearText(VirtualMachine& m) {
+		HeapObject* obj = PopHeapObj(m);
+		obj->ClearText();
+	}
+	void AppendCode(VirtualMachine& m) {
+		size_t length = m.IP.ReadPosition();
+		HeapObject* obj = PopHeapObj(m);
+		if (!obj->IsCode) throw RuntimeError("Unable to append code to a non-executable object");
+		for (size_t i = 0; i < length; i++) {
+			obj->Append(m.IP.ReadByte());
+		}
+	}
+	void AppendCodeLiteral(VirtualMachine& m) {
+		// TODO
+	}
+	void AppendText(VirtualMachine& m) {
+		size_t length = m.IP.ReadPosition();
+		HeapObject* obj = PopHeapObj(m);
+		if (obj->IsCode) throw RuntimeError("Unable to append text to an executable object");
+		for (size_t i = 0; i < length; i++) {
+			obj->Append(m.IP.ReadByte());
+		}
+	}
+	void AppendNumber(VirtualMachine& m) {
+		// TODO
+	}
+	void PrintText(VirtualMachine& m) {
+		// TODO
 	}
 }
 
 void VirtualMachine::Step() {
 	if (Completed) return;
 	InstructionType cmd = (InstructionType)IP.ReadByte();
-	try {
-		switch (cmd) {
-		case InstructionType::Ret: VMOperations::Ret(*this); break;
-		case InstructionType::Call: VMOperations::NormalCall(*this); break;
-		case InstructionType::TailCall: VMOperations::TailCall(*this); break;
-		case InstructionType::Jump: VMOperations::Jump(*this); break;
-		case InstructionType::TrueJump: VMOperations::TrueJump(*this); break;
-		case InstructionType::FalseJump: VMOperations::FalseJump(*this); break;
-		case InstructionType::BoolNot: VMOperations::MathOp(*this, ObjOperations::BoolNot); break;
-		case InstructionType::IntNot: VMOperations::MathOp(*this, ObjOperations::IntNot); break;
-		case InstructionType::BoolAnd: VMOperations::MathOp(*this, ObjOperations::BoolAnd); break;
-		case InstructionType::IntAnd: VMOperations::MathOp(*this, ObjOperations::IntAnd); break;
-		case InstructionType::BoolOr: VMOperations::MathOp(*this, ObjOperations::BoolOr); break;
-		case InstructionType::IntOr: VMOperations::MathOp(*this, ObjOperations::IntOr); break;
-		case InstructionType::StrictEqual: VMOperations::MathOp(*this, ObjOperations::StrictEqual); break;
-		case InstructionType::StrictNeq: VMOperations::MathOp(*this, ObjOperations::StrictNeq); break;
-		case InstructionType::NumEqual: VMOperations::MathOp(*this, ObjOperations::NumEqual); break;
-		case InstructionType::NumNeq: VMOperations::MathOp(*this, ObjOperations::NumNeq); break;
-		case InstructionType::NumLt: VMOperations::MathOp(*this, ObjOperations::NumLt); break;
-		case InstructionType::NumGt: VMOperations::MathOp(*this, ObjOperations::NumGt); break;
-		case InstructionType::NumLeq: VMOperations::MathOp(*this, ObjOperations::NumLeq); break;
-		case InstructionType::NumGeq: VMOperations::MathOp(*this, ObjOperations::NumGeq); break;
-		case InstructionType::BoolFalse: VMOperations::Bool(*this, false); break;
-		case InstructionType::BoolTrue: VMOperations::Bool(*this, true); break;
-		case InstructionType::IntLiteral: VMOperations::IntLiteral(*this); break;
-		case InstructionType::RealLiteral: VMOperations::RealLiteral(*this); break;
-		case InstructionType::Add: VMOperations::MathOp(*this, ObjOperations::Add); break;
-		case InstructionType::Sub: VMOperations::MathOp(*this, ObjOperations::Sub); break;
-		case InstructionType::Mul: VMOperations::MathOp(*this, ObjOperations::Mul); break;
-		case InstructionType::Neg: VMOperations::MathOp(*this, ObjOperations::Neg); break;
-		case InstructionType::IntDiv: VMOperations::MathOp(*this, ObjOperations::IntDiv); break;
-		case InstructionType::IntMod: VMOperations::MathOp(*this, ObjOperations::IntMod); break;
-		case InstructionType::RealDiv: VMOperations::MathOp(*this, ObjOperations::RealDiv); break;
-		case InstructionType::RealMod: VMOperations::MathOp(*this, ObjOperations::RealMod); break;
-		case InstructionType::ToInt: VMOperations::MathOp(*this, ObjOperations::ToInt); break;
-		case InstructionType::ToReal: VMOperations::MathOp(*this, ObjOperations::ToReal); break;
-		case InstructionType::CreateObject: VMOperations::CreateObject(*this); break;
-			// TODO: More opcodes
-		}
-	} catch (RuntimeError err) {
-		Completed = true;
-		// TODO: Handle errors
+	switch (cmd) {
+	case InstructionType::Ret: VMOperations::Ret(*this); break;
+	case InstructionType::Call: VMOperations::NormalCall(*this); break;
+	case InstructionType::TailCall: VMOperations::TailCall(*this); break;
+	case InstructionType::Jump: VMOperations::Jump(*this); break;
+	case InstructionType::TrueJump: VMOperations::TrueJump(*this); break;
+	case InstructionType::FalseJump: VMOperations::FalseJump(*this); break;
+
+	case InstructionType::BoolNot: VMOperations::MathOp(*this, ObjOperations::BoolNot); break;
+	case InstructionType::IntNot: VMOperations::MathOp(*this, ObjOperations::IntNot); break;
+	case InstructionType::BoolAnd: VMOperations::MathOp(*this, ObjOperations::BoolAnd); break;
+	case InstructionType::IntAnd: VMOperations::MathOp(*this, ObjOperations::IntAnd); break;
+	case InstructionType::BoolOr: VMOperations::MathOp(*this, ObjOperations::BoolOr); break;
+	case InstructionType::IntOr: VMOperations::MathOp(*this, ObjOperations::IntOr); break;
+	
+	case InstructionType::StrictEqual: VMOperations::MathOp(*this, ObjOperations::StrictEqual); break;
+	case InstructionType::StrictNeq: VMOperations::MathOp(*this, ObjOperations::StrictNeq); break;
+	case InstructionType::NumEqual: VMOperations::MathOp(*this, ObjOperations::NumEqual); break;
+	case InstructionType::NumNeq: VMOperations::MathOp(*this, ObjOperations::NumNeq); break;
+	case InstructionType::NumLt: VMOperations::MathOp(*this, ObjOperations::NumLt); break;
+	case InstructionType::NumGt: VMOperations::MathOp(*this, ObjOperations::NumGt); break;
+	case InstructionType::NumLeq: VMOperations::MathOp(*this, ObjOperations::NumLeq); break;
+	case InstructionType::NumGeq: VMOperations::MathOp(*this, ObjOperations::NumGeq); break;
+	
+	case InstructionType::Null: VMOperations::Null(*this); break;
+	case InstructionType::BoolFalse: VMOperations::Bool(*this, false); break;
+	case InstructionType::BoolTrue: VMOperations::Bool(*this, true); break;
+	case InstructionType::IntLiteral: VMOperations::IntLiteral(*this); break;
+	case InstructionType::RealLiteral: VMOperations::RealLiteral(*this); break;
+	case InstructionType::TypeLiteral: VMOperations::TypeLiteral(*this); break;
+
+	case InstructionType::Add: VMOperations::MathOp(*this, ObjOperations::Add); break;
+	case InstructionType::Sub: VMOperations::MathOp(*this, ObjOperations::Sub); break;
+	case InstructionType::Mul: VMOperations::MathOp(*this, ObjOperations::Mul); break;
+	case InstructionType::Neg: VMOperations::MathOp(*this, ObjOperations::Neg); break;
+	case InstructionType::IntDiv: VMOperations::MathOp(*this, ObjOperations::IntDiv); break;
+	case InstructionType::IntMod: VMOperations::MathOp(*this, ObjOperations::IntMod); break;
+	case InstructionType::RealDiv: VMOperations::MathOp(*this, ObjOperations::RealDiv); break;
+	case InstructionType::RealMod: VMOperations::MathOp(*this, ObjOperations::RealMod); break;
+	case InstructionType::ToInt: VMOperations::MathOp(*this, ObjOperations::ToInt); break;
+	case InstructionType::ToReal: VMOperations::MathOp(*this, ObjOperations::ToReal); break;
+	case InstructionType::CreateObject: VMOperations::CreateObject(*this); break;
+	case InstructionType::ShallowCopy: VMOperations::ShallowCopy(*this); break;
+	case InstructionType::GetGlobalObject: VMOperations::GetGlobalObject(*this); break;
+	case InstructionType::GetFunctionObject: VMOperations::GetFunctionObject(*this); break;
+	case InstructionType::GetMember: VMOperations::GetMember(*this); break;
+	case InstructionType::SetMember: VMOperations::SetMember(*this); break;
+	case InstructionType::PushFrame: VMOperations::PushFrame(*this); break;
+	case InstructionType::PopFrame: VMOperations::PopFrame(*this); break;
+	case InstructionType::Pick: VMOperations::Pick(*this); break;
+	case InstructionType::Bury: VMOperations::Bury(*this); break;
+	case InstructionType::PopDiscard: VMOperations::PopDiscard(*this); break;
+	case InstructionType::ClearCode: VMOperations::ClearCode(*this); break;
+	case InstructionType::ClearText: VMOperations::ClearText(*this); break;
+	case InstructionType::AppendCode: VMOperations::AppendCode(*this); break;
+	case InstructionType::AppendCodeLiteral: VMOperations::AppendCodeLiteral(*this); break;
+	case InstructionType::AppendText: VMOperations::AppendText(*this); break;
+	case InstructionType::AppendNumber: VMOperations::AppendNumber(*this); break;
+	case InstructionType::PrintText: VMOperations::PrintText(*this); break;
+		// TODO: More opcodes
+	default:
+		throw RuntimeError("This opcode has not been implemented yet.");
 	}
 }

@@ -4,6 +4,7 @@
 #include "PrimitiveObject.h"
 #include <memory>
 #include <stack>
+#include <vector>
 
 class VirtualMachine {
 private:
@@ -13,8 +14,9 @@ private:
 public:
 	bool Completed;
 	InstructionIndex IP;
-	std::stack<PrimitiveObject> MainStack;
+	std::vector<PrimitiveObject> MainStack;
 	std::stack<InstructionIndex> CallStack;
+	std::stack<size_t> FrameStack;
 	VirtualMachine();
 	~VirtualMachine();
 	GarbageCollector* GetGC();

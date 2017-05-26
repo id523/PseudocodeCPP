@@ -19,9 +19,11 @@ enum class InstructionType : byte {
 	NumEqual, NumNeq, // Checks for (in)equality between the numeric values of two numbers. Both operands must be either Null, Int or Real. Null is considered equal to zero.
 	NumLt, NumGt, NumLeq, NumGeq, // Compares two numbers by numeric value. Both operands must be either Null, Int or Real. Null is considered equal to zero.
 	// LITERALS
+	Null, // Pushes a null value to the stack.
 	BoolFalse, BoolTrue, // Pushes a literal boolean constant.
 	IntLiteral, // Skips the next eight bytes of program, interpreting them as the representation of a twos-complement signed integer. This integer is pushed to the stack.
 	RealLiteral, // Skips the next eight bytes of program, interpreting them as the representation of a double-precision floating-point number. This number is pushed to the stack.
+	TypeLiteral, // Skips the next byte of program, interpreting it as a member of the PrimitiveType enum, which is pushed to the stack.
 	// ARITHMETIC
 	Add, Sub, Mul, Neg, // Performs an arithmetic operation. The result is an integer if and only if both operands are integers.
 	IntDiv, // Rounds both arguments towards zero and calculates their quotient, rounded towards zero.
@@ -31,17 +33,27 @@ enum class InstructionType : byte {
 	ToInt, // Rounds a real number towards zero.
 	ToReal, // Converts an integer to a floating-point number.
 	// OBJECTS
+	GetType, // Pops a value and pushes its datatype.
 	CreateObject, // Creates and pushes a pointer to a new empty object.
 	ShallowCopy, // Pops a pointer to an object, makes a shallow copy of it, and pushes the pointer to the copy.
 	GetGlobalObject, // Gets a pointer to the global object.
 	GetFunctionObject, // Gets a pointer to the object containing the current function.
 	GetMember, // Gets a member of an object. The next byte is a member-name length and the next [length] bytes are the member name. These are all skipped.
 	SetMember, // Sets a member of an object. The next byte is a member-name length and the next [length] bytes are the member name. These are all skipped.
+	// STACK MANIPULATION
+	PushFrame, // Reads a byte N from the program, starts a new stack frame, and moves the top N items of the stack into it.
+	PopFrame, // Reads a byte N from the program, pops items until there are N items remaining in the stack frame, and moves those items into the stack frame below.
+	Pick, // Reads a byte N from the program and pushes the item that is N places away from the bottom of the stack frame to the top of the stack.
+	Bury, // Reads a byte N from the program and replaces the item that is N places away from the bottom of the stack frame with the item at the top of the stack.
 	PopDiscard, // Pops an item off the stack and discards it.
-	// CODE
-	ClearCode, // Pops an object pointer and removes the code contained in that object.
-	BeginAppendCode, // Skips all instructions up to the matching EndAppendCode, appending them to the code of the object pointed to by the top of the stack, without removing the pointer.
-	EndAppendCode, // Stops skipping instructions and pops the object pointer left at the top of the stack.
+	// CODE/TEXT
+	ClearCode, // Pops an object pointer and removes the binary data contained in that object, marking it as executable.
+	ClearText, // Pops an object pointer and removes the binary data contained in that object, marking it as non-executable.
+	AppendCode, // Skips the next four bytes of program, interpreting them as a length, pops an object pointer off the stack, and appends the next [length] bytes to the object as code.
+	AppendCodeLiteral, // Pops an object pointer and a non-pointer value, and appends code to the object that pushes that value to the stack.
+	AppendText, // Skips the next four bytes of program, interpreting them as a length, pops an object pointer off the stack, and appends the next [length] bytes to the object as text.
+	AppendNumber, // Pops an object pointer and a number off the stack, and appends the string representation of that number to the text of the object.
+	PrintText, // Pops an object pointer and prints the text of the object to standard output.
 	// DEBUG
 	DebugLine, // Skips the next four bytes of program, interpreting them as a line number. If an error occurs, it will display that line number.
 };
