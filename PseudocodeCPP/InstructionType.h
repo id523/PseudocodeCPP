@@ -38,8 +38,10 @@ enum InstructionType : byte {
 	ShallowCopy, // Pops a pointer to an object, makes a shallow copy of it, and pushes the pointer to the copy.
 	GetGlobalObject, // Gets a pointer to the global object.
 	GetFunctionObject, // Gets a pointer to the object containing the current function.
-	GetMember, // Gets a member of an object. The next byte is a member-name length and the next [length] bytes are the member name. These are all skipped.
-	SetMember, // Sets a member of an object. The next byte is a member-name length and the next [length] bytes are the member name. These are all skipped.
+	GetMember, // Gets a member of an object. * The next byte is a member-name length and the next [length] bytes are the member name. These are all skipped.
+	SetMember, // Sets a member of an object. * The next byte is a member-name length and the next [length] bytes are the member name. These are all skipped.
+	GetMemberDynamic, // Gets a member of an object. ** The next byte is a member-name length and the next [length] bytes are a prefix for the member name.
+	SetMemberDynamic, // Sets a member of an object. ** The next byte is a member-name length and the next [length] bytes are a prefix for the member name.
 	// STACK MANIPULATION
 	PushFrame, // Reads a byte N from the program, starts a new stack frame, and moves the top N items of the stack into it.
 	PopFrame, // Reads a byte N from the program, pops items until there are N items remaining in the stack frame, and moves those items into the stack frame below.
@@ -56,4 +58,35 @@ enum InstructionType : byte {
 	PrintText, // Pops an object pointer and prints the text of the object to standard output.
 	// DEBUG
 	DebugLine, // Skips the next four bytes of program, interpreting them as a line number. If an error occurs, it will display that line number.
+	// Count
+	InstructionCount
 };
+
+/*
+	*  The GetMember and SetMember instructions expect the values on the stack to be in the order:
+	   [Object] [Value if applicable]
+	   They look up the member of the [Object] with the member name specified in the instruction.
+
+	** The GetMemberDynamic and SetMemberDynamic instructions expect the values on the stack to be in the order:
+	   [Object] [Index] [Value if applicable]
+	   They get the string representation of the [Index], which must be an integer,
+	   and append it after the member-name prefix specified in the instruction.
+	   Then, the member of [Object] with the resulting name is looked up.
+*/
+
+const char* const InstructionTypeTexts[InstructionCount] {
+	"Ret", "Call", "TailCall", "Jump", "TrueJump", "FalseJump",
+	"BoolNot", "IntNot", "BoolAnd", "IntAnd", "BoolOr", "IntOr",
+	"StrictEqual", "StrictNeq", "NumEqual", "NumNeq",
+	"NumLt", "NumGt", "NumLeq", "NumGeq",
+	"Null", "BoolFalse", "BoolTrue", 
+	"IntLiteral", "RealLiteral", "TypeLiteral", 
+	"Add", "Sub", "Mul", "Neg", 
+	"IntDiv", "IntMod", "RealDiv", "RealMod", 
+	"ToInt", "ToReal", 
+	"GetType", 
+	"CreateObject", "ShallowCopy", "GetGlobalObject", "GetFunctionObject", 
+	"GetMember", "SetMember", "GetMemberDynamic", "SetMemberDynamic", 
+	"PushFrame", "PopFrame", "Pick", "Bury", "PopDiscard",
+	"ClearCode", "ClearText", "AppendCode", "AppendCodeLiteral", "AppendText", "AppendFormat", "PrintText",
+	"DebugLine", };

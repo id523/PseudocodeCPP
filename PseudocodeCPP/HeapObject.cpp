@@ -26,7 +26,7 @@ void HeapObject::ClearText() {
 
 byte HeapObject::GetCodeAt(size_t pos) const {
 	if (!IsCode) throw RuntimeError("Attempted to execute code from a non-executable object");
-	if (pos > Code.size()) return (byte)InstructionType::Ret;
+	if (pos >= Code.size()) return (byte)InstructionType::Ret;
 	return Code[pos];
 }
 

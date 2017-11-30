@@ -139,12 +139,33 @@ namespace VMOperations {
 		}
 		PrimitiveObject tmp = m.MainStack.back();
 		m.MainStack.pop_back();
-		try {
-			ObjOperations::SetMember(m.MainStack.back(), memberName, tmp);
-		} catch (RuntimeError err) {
-			m.MainStack.push_back(std::move(tmp));
-			throw err;
+		ObjOperations::SetMember(m.MainStack.back(), memberName, tmp);
+	}
+	void GetMemberDynamic(VirtualMachine& m) {
+		EnsureFrame(m, 2);
+		size_t length = m.IP.ReadByte();
+		std::ostringstream memberName;
+		for (size_t i = 0; i < length; i++) {
+			memberName.put(m.IP.ReadByte());
 		}
+		memberName << (int64_t)m.MainStack.back();
+		m.MainStack.pop_back();
+		std::string memberNameStr = memberName.str();
+		ObjOperations::GetMember(m.MainStack.back(), memberNameStr);
+	}
+	void SetMemberDynamic(VirtualMachine& m) {
+		EnsureFrame(m, 3);
+		size_t length = m.IP.ReadByte();
+		std::ostringstream memberName;
+		for (size_t i = 0; i < length; i++) {
+			memberName.put(m.IP.ReadByte());
+		}
+		PrimitiveObject tmp = m.MainStack.back();
+		m.MainStack.pop_back();
+		memberName << (int64_t)m.MainStack.back();
+		m.MainStack.pop_back();
+		std::string memberNameStr = memberName.str();
+		ObjOperations::SetMember(m.MainStack.back(), memberNameStr, tmp);
 	}
 	void PushFrame(VirtualMachine& m) {
 		size_t FrameSize = m.IP.ReadByte();
@@ -169,7 +190,7 @@ namespace VMOperations {
 	void Pick(VirtualMachine& m) {
 		size_t IndexInFrame = m.IP.ReadByte();
 		size_t FramePointer;
-		EnsureFrame(m, IndexInFrame + 2, FramePointer);
+		EnsureFrame(m, IndexInFrame + 1, FramePointer);
 		size_t ItemIndex = FramePointer + IndexInFrame;
 		m.MainStack.push_back(m.MainStack.at(ItemIndex));
 	}
@@ -308,70 +329,82 @@ void VirtualMachine::Step() {
 	if (Completed) return;
 	if (gc) gc->Suspend();
 	InstructionType cmd = (InstructionType)IP.ReadByte();
-	switch (cmd) {
-	case InstructionType::Ret: VMOperations::Ret(*this); break;
-	case InstructionType::Call: VMOperations::NormalCall(*this); break;
-	case InstructionType::TailCall: VMOperations::TailCall(*this); break;
-	case InstructionType::Jump: VMOperations::Jump(*this); break;
-	case InstructionType::TrueJump: VMOperations::TrueJump(*this); break;
-	case InstructionType::FalseJump: VMOperations::FalseJump(*this); break;
+	const char* InstrName = cmd < InstructionCount ? InstructionTypeTexts[cmd] : "<unknown instruction>";
+	try {
+		switch (cmd) {
+		case InstructionType::Ret: VMOperations::Ret(*this); break;
+		case InstructionType::Call: VMOperations::NormalCall(*this); break;
+		case InstructionType::TailCall: VMOperations::TailCall(*this); break;
+		case InstructionType::Jump: VMOperations::Jump(*this); break;
+		case InstructionType::TrueJump: VMOperations::TrueJump(*this); break;
+		case InstructionType::FalseJump: VMOperations::FalseJump(*this); break;
 
-	case InstructionType::BoolNot: VMOperations::MathOp(*this, ObjOperations::BoolNot); break;
-	case InstructionType::IntNot: VMOperations::MathOp(*this, ObjOperations::IntNot); break;
-	case InstructionType::BoolAnd: VMOperations::MathOp(*this, ObjOperations::BoolAnd); break;
-	case InstructionType::IntAnd: VMOperations::MathOp(*this, ObjOperations::IntAnd); break;
-	case InstructionType::BoolOr: VMOperations::MathOp(*this, ObjOperations::BoolOr); break;
-	case InstructionType::IntOr: VMOperations::MathOp(*this, ObjOperations::IntOr); break;
-	
-	case InstructionType::StrictEqual: VMOperations::MathOp(*this, ObjOperations::StrictEqual); break;
-	case InstructionType::StrictNeq: VMOperations::MathOp(*this, ObjOperations::StrictNeq); break;
-	case InstructionType::NumEqual: VMOperations::MathOp(*this, ObjOperations::NumEqual); break;
-	case InstructionType::NumNeq: VMOperations::MathOp(*this, ObjOperations::NumNeq); break;
-	case InstructionType::NumLt: VMOperations::MathOp(*this, ObjOperations::NumLt); break;
-	case InstructionType::NumGt: VMOperations::MathOp(*this, ObjOperations::NumGt); break;
-	case InstructionType::NumLeq: VMOperations::MathOp(*this, ObjOperations::NumLeq); break;
-	case InstructionType::NumGeq: VMOperations::MathOp(*this, ObjOperations::NumGeq); break;
-	
-	case InstructionType::Null: VMOperations::Null(*this); break;
-	case InstructionType::BoolFalse: VMOperations::Bool(*this, false); break;
-	case InstructionType::BoolTrue: VMOperations::Bool(*this, true); break;
-	case InstructionType::IntLiteral: VMOperations::IntLiteral(*this); break;
-	case InstructionType::RealLiteral: VMOperations::RealLiteral(*this); break;
-	case InstructionType::TypeLiteral: VMOperations::TypeLiteral(*this); break;
+		case InstructionType::BoolNot: VMOperations::MathOp(*this, ObjOperations::BoolNot); break;
+		case InstructionType::IntNot: VMOperations::MathOp(*this, ObjOperations::IntNot); break;
+		case InstructionType::BoolAnd: VMOperations::MathOp(*this, ObjOperations::BoolAnd); break;
+		case InstructionType::IntAnd: VMOperations::MathOp(*this, ObjOperations::IntAnd); break;
+		case InstructionType::BoolOr: VMOperations::MathOp(*this, ObjOperations::BoolOr); break;
+		case InstructionType::IntOr: VMOperations::MathOp(*this, ObjOperations::IntOr); break;
 
-	case InstructionType::Add: VMOperations::MathOp(*this, ObjOperations::Add); break;
-	case InstructionType::Sub: VMOperations::MathOp(*this, ObjOperations::Sub); break;
-	case InstructionType::Mul: VMOperations::MathOp(*this, ObjOperations::Mul); break;
-	case InstructionType::Neg: VMOperations::MathOp(*this, ObjOperations::Neg); break;
-	case InstructionType::IntDiv: VMOperations::MathOp(*this, ObjOperations::IntDiv); break;
-	case InstructionType::IntMod: VMOperations::MathOp(*this, ObjOperations::IntMod); break;
-	case InstructionType::RealDiv: VMOperations::MathOp(*this, ObjOperations::RealDiv); break;
-	case InstructionType::RealMod: VMOperations::MathOp(*this, ObjOperations::RealMod); break;
-	case InstructionType::ToInt: VMOperations::MathOp(*this, ObjOperations::ToInt); break;
-	case InstructionType::ToReal: VMOperations::MathOp(*this, ObjOperations::ToReal); break;
-	case InstructionType::CreateObject: VMOperations::CreateObject(*this); break;
-	case InstructionType::ShallowCopy: VMOperations::ShallowCopy(*this); break;
-	case InstructionType::GetGlobalObject: VMOperations::GetGlobalObject(*this); break;
-	case InstructionType::GetFunctionObject: VMOperations::GetFunctionObject(*this); break;
-	case InstructionType::GetMember: VMOperations::GetMember(*this); break;
-	case InstructionType::SetMember: VMOperations::SetMember(*this); break;
-	case InstructionType::PushFrame: VMOperations::PushFrame(*this); break;
-	case InstructionType::PopFrame: VMOperations::PopFrame(*this); break;
-	case InstructionType::Pick: VMOperations::Pick(*this); break;
-	case InstructionType::Bury: VMOperations::Bury(*this); break;
-	case InstructionType::PopDiscard: VMOperations::PopDiscard(*this); break;
-	case InstructionType::ClearCode: VMOperations::ClearCode(*this); break;
-	case InstructionType::ClearText: VMOperations::ClearText(*this); break;
-	case InstructionType::AppendCode: VMOperations::AppendCode(*this); break;
-	case InstructionType::AppendCodeLiteral: VMOperations::AppendCodeLiteral(*this); break;
-	case InstructionType::AppendText: VMOperations::AppendText(*this); break;
-	case InstructionType::AppendFormat: VMOperations::AppendFormat(*this); break;
-	case InstructionType::PrintText: VMOperations::PrintText(*this); break;
-	case InstructionType::DebugLine: VMOperations::DebugLine(*this); break;
-		// TODO: More opcodes
-	default:
-		if (gc) gc->Resume();
-		throw RuntimeError("This opcode has not been implemented yet.");
+		case InstructionType::StrictEqual: VMOperations::MathOp(*this, ObjOperations::StrictEqual); break;
+		case InstructionType::StrictNeq: VMOperations::MathOp(*this, ObjOperations::StrictNeq); break;
+		case InstructionType::NumEqual: VMOperations::MathOp(*this, ObjOperations::NumEqual); break;
+		case InstructionType::NumNeq: VMOperations::MathOp(*this, ObjOperations::NumNeq); break;
+		case InstructionType::NumLt: VMOperations::MathOp(*this, ObjOperations::NumLt); break;
+		case InstructionType::NumGt: VMOperations::MathOp(*this, ObjOperations::NumGt); break;
+		case InstructionType::NumLeq: VMOperations::MathOp(*this, ObjOperations::NumLeq); break;
+		case InstructionType::NumGeq: VMOperations::MathOp(*this, ObjOperations::NumGeq); break;
+
+		case InstructionType::Null: VMOperations::Null(*this); break;
+		case InstructionType::BoolFalse: VMOperations::Bool(*this, false); break;
+		case InstructionType::BoolTrue: VMOperations::Bool(*this, true); break;
+		case InstructionType::IntLiteral: VMOperations::IntLiteral(*this); break;
+		case InstructionType::RealLiteral: VMOperations::RealLiteral(*this); break;
+		case InstructionType::TypeLiteral: VMOperations::TypeLiteral(*this); break;
+
+		case InstructionType::Add: VMOperations::MathOp(*this, ObjOperations::Add); break;
+		case InstructionType::Sub: VMOperations::MathOp(*this, ObjOperations::Sub); break;
+		case InstructionType::Mul: VMOperations::MathOp(*this, ObjOperations::Mul); break;
+		case InstructionType::Neg: VMOperations::MathOp(*this, ObjOperations::Neg); break;
+		case InstructionType::IntDiv: VMOperations::MathOp(*this, ObjOperations::IntDiv); break;
+		case InstructionType::IntMod: VMOperations::MathOp(*this, ObjOperations::IntMod); break;
+		case InstructionType::RealDiv: VMOperations::MathOp(*this, ObjOperations::RealDiv); break;
+		case InstructionType::RealMod: VMOperations::MathOp(*this, ObjOperations::RealMod); break;
+		case InstructionType::ToInt: VMOperations::MathOp(*this, ObjOperations::ToInt); break;
+		case InstructionType::ToReal: VMOperations::MathOp(*this, ObjOperations::ToReal); break;
+
+		case InstructionType::CreateObject: VMOperations::CreateObject(*this); break;
+		case InstructionType::ShallowCopy: VMOperations::ShallowCopy(*this); break;
+		case InstructionType::GetGlobalObject: VMOperations::GetGlobalObject(*this); break;
+		case InstructionType::GetFunctionObject: VMOperations::GetFunctionObject(*this); break;
+		case InstructionType::GetMember: VMOperations::GetMember(*this); break;
+		case InstructionType::SetMember: VMOperations::SetMember(*this); break;
+		case InstructionType::GetMemberDynamic: VMOperations::GetMemberDynamic(*this); break;
+		case InstructionType::SetMemberDynamic: VMOperations::SetMemberDynamic(*this); break;
+
+		case InstructionType::PushFrame: VMOperations::PushFrame(*this); break;
+		case InstructionType::PopFrame: VMOperations::PopFrame(*this); break;
+		case InstructionType::Pick: VMOperations::Pick(*this); break;
+		case InstructionType::Bury: VMOperations::Bury(*this); break;
+		case InstructionType::PopDiscard: VMOperations::PopDiscard(*this); break;
+
+		case InstructionType::ClearCode: VMOperations::ClearCode(*this); break;
+		case InstructionType::ClearText: VMOperations::ClearText(*this); break;
+		case InstructionType::AppendCode: VMOperations::AppendCode(*this); break;
+		case InstructionType::AppendCodeLiteral: VMOperations::AppendCodeLiteral(*this); break;
+		case InstructionType::AppendText: VMOperations::AppendText(*this); break;
+		case InstructionType::AppendFormat: VMOperations::AppendFormat(*this); break;
+		case InstructionType::PrintText: VMOperations::PrintText(*this); break;
+		case InstructionType::DebugLine: VMOperations::DebugLine(*this); break;
+			// TODO: More opcodes
+		default:
+			throw RuntimeError("This opcode has not been implemented.");
+		}
+	} catch (const RuntimeError& err) {
+		std::ostringstream composedError;
+		composedError << "Line " << IP.LineNumber << ", " << InstrName << ": " << err.what();
+		std::string composedErrorStr = composedError.str();
+		throw RuntimeError(composedErrorStr.data(), composedErrorStr.length());
 	}
 	if (gc) gc->Resume();
 }
