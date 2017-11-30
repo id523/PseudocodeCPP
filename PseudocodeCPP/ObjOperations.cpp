@@ -91,19 +91,35 @@ void ObjOperations::NumGeq(PrimitiveObject & x, const PrimitiveObject & y) {
 }
 
 void ObjOperations::Add(PrimitiveObject & x, const PrimitiveObject & y) {
-	// TODO: Implement
+	if (x.GetType() == ObjType_Real || y.GetType == ObjType_Real) {
+		x = (double)x + (double)y;
+	} else {
+		x = (int64_t)x + (int64_t)y;
+	}
 }
 
 void ObjOperations::Sub(PrimitiveObject & x, const PrimitiveObject & y) {
-	// TODO: Implement
+	if (x.GetType() == ObjType_Real || y.GetType == ObjType_Real) {
+		x = (double)x - (double)y;
+	} else {
+		x = (int64_t)x - (int64_t)y;
+	}
 }
 
 void ObjOperations::Mul(PrimitiveObject & x, const PrimitiveObject & y) {
-	// TODO: Implement
+	if (x.GetType() == ObjType_Real || y.GetType == ObjType_Real) {
+		x = (double)x * (double)y;
+	} else {
+		x = (int64_t)x * (int64_t)y;
+	}
 }
 
 void ObjOperations::Neg(PrimitiveObject & x) {
-	// TODO: Implement
+	if (x.GetType() == ObjType_Real) {
+		x = -(double)x;
+	} else {
+		x = -(int64_t)x;
+	}
 }
 
 void ObjOperations::IntDiv(PrimitiveObject & x, const PrimitiveObject & y) {
@@ -131,11 +147,11 @@ void ObjOperations::RealMod(PrimitiveObject & x, const PrimitiveObject & y) {
 }
 
 void ObjOperations::ToInt(PrimitiveObject & x) {
-	// TODO: Implement
+	x = (int64_t)x;
 }
 
 void ObjOperations::ToReal(PrimitiveObject & x) {
-	// TODO: Implement
+	x = (double)x;
 }
 
 void ObjOperations::GetMember(PrimitiveObject & x, const std::string & memberName) {
