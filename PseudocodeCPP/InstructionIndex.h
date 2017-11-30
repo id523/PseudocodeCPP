@@ -17,6 +17,7 @@ private:
 	const HeapObject* FunctionRef;
 public:
 	size_t FunctionPos;
+	size_t LineNumber;
 	InstructionIndex();
 	InstructionIndex(GarbageCollector* gc);
 	InstructionIndex(GarbageCollector* gc, const HeapObject* funcref, size_t pos);

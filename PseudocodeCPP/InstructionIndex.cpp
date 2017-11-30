@@ -2,16 +2,17 @@
 #include "InstructionIndex.h"
 
 InstructionIndex::InstructionIndex() : 
-	GC(nullptr), FunctionRef(nullptr), FunctionPos(0) {}
+	GC(nullptr), FunctionRef(nullptr), FunctionPos(0), LineNumber(0) {}
 
 InstructionIndex::InstructionIndex(GarbageCollector * gc) : 
-	GC(gc), FunctionRef(nullptr), FunctionPos(0) {}
+	GC(gc), FunctionRef(nullptr), FunctionPos(0), LineNumber(0) {}
 
 InstructionIndex::InstructionIndex(GarbageCollector * gc, const HeapObject* funcref, size_t pos) {
 	GC = gc;
 	if (GC) GC->IncrementRefCount(funcref, true);
 	FunctionRef = funcref;
 	FunctionPos = pos;
+	LineNumber = 0;
 }
 
 InstructionIndex::InstructionIndex(const InstructionIndex & other) {
@@ -19,10 +20,11 @@ InstructionIndex::InstructionIndex(const InstructionIndex & other) {
 	if (GC) GC->IncrementRefCount(other.FunctionRef, true);
 	FunctionRef = other.FunctionRef;
 	FunctionPos = other.FunctionPos;
+	LineNumber = other.LineNumber;
 }
 
 InstructionIndex::InstructionIndex(InstructionIndex && other) :
-	GC(nullptr), FunctionRef(nullptr), FunctionPos(0) {
+	GC(nullptr), FunctionRef(nullptr), FunctionPos(0), LineNumber(0) {
 	swap(other);
 }
 
@@ -35,6 +37,7 @@ void InstructionIndex::swap(InstructionIndex & r) {
 	swap(GC, r.GC);
 	swap(FunctionRef, r.FunctionRef);
 	swap(FunctionPos, r.FunctionPos);
+	swap(LineNumber, r.LineNumber);
 }
 
 InstructionIndex & InstructionIndex::operator=(const InstructionIndex& other) {
@@ -56,6 +59,7 @@ void InstructionIndex::SetGCAndNull(GarbageCollector * gc) {
 	if (GC) GC->DecrementRefCount(FunctionRef, true);
 	FunctionRef = nullptr;
 	FunctionPos = 0;
+	LineNumber = 0;
 	GC = gc;
 }
 
@@ -151,7 +155,7 @@ int64_t InstructionIndex::ReadInteger() {
 double InstructionIndex::ReadDouble() {
 	uint64_t intbits = ReadUnsignedInteger();
 	// Reinterpret the bit-pattern of the integer as if it was a double
-	return *(double*)&intbits;
+	return *reinterpret_cast<double*>(&intbits);
 }
 
 std::string InstructionIndex::ReadString() {

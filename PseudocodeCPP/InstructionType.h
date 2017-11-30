@@ -1,7 +1,7 @@
 #pragma once
 #include "Byte.h"
 
-enum class InstructionType : byte {
+enum InstructionType : byte {
 	// All sequences of bytes representing numbers are big-endian.
 	// FLOW CONTROL
 	Ret, // If the call stack is empty, exits the program. Otherwise, it pops an address from the call stack and jumps to it.
@@ -52,7 +52,7 @@ enum class InstructionType : byte {
 	AppendCode, // Skips the next four bytes of program, interpreting them as a length, pops an object pointer off the stack, and appends the next [length] bytes to the object as code.
 	AppendCodeLiteral, // Pops an object pointer and a non-pointer value, and appends code to the object that pushes that value to the stack.
 	AppendText, // Skips the next four bytes of program, interpreting them as a length, pops an object pointer off the stack, and appends the next [length] bytes to the object as text.
-	AppendNumber, // Pops an object pointer and a number off the stack, and appends the string representation of that number to the text of the object.
+	AppendFormat, // Pops an object pointer and a value off the stack, and appends the string representation of that value to the text of the object.
 	PrintText, // Pops an object pointer and prints the text of the object to standard output.
 	// DEBUG
 	DebugLine, // Skips the next four bytes of program, interpreting them as a line number. If an error occurs, it will display that line number.

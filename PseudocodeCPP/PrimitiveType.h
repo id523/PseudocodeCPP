@@ -8,6 +8,7 @@ enum PrimitiveType : byte {
 	ObjType_Int,
 	ObjType_Real,
 	ObjType_HeapObj,
+	ObjType_Max,
 };
 
 inline const char* TypeToString(PrimitiveType t) {

@@ -3,6 +3,8 @@
 #include "InstructionType.h"
 #include "ObjOperations.h"
 #include "RuntimeError.h"
+#include <iostream>
+#include <sstream>
 #include <string>
 
 namespace VMOperations {
@@ -95,7 +97,12 @@ namespace VMOperations {
 		m.MainStack.emplace_back(m.IP.ReadDouble(), m.GetGC(), true);
 	}
 	void TypeLiteral(VirtualMachine& m) {
-		// TODO
+		byte b = m.IP.ReadByte();
+		if (b < ObjType_Max) {
+			m.MainStack.emplace_back((PrimitiveType)b, m.GetGC(), true);
+		} else {
+			throw RuntimeError("Invalid type literal. This is most likely caused by a bug in the compiler");
+		}
 	}
 	void CreateObject(VirtualMachine& m) {
 		m.MainStack.emplace_back(m.GetGC(), true);
@@ -202,7 +209,46 @@ namespace VMOperations {
 		}
 	}
 	void AppendCodeLiteral(VirtualMachine& m) {
-		// TODO
+		EnsureFrame(m, 2);
+		PrimitiveObject value = m.MainStack.back();
+		m.MainStack.pop_back();
+		HeapObject* obj = PopHeapObj(m);
+		if (!obj->IsCode) throw RuntimeError("Unable to append code to a non-executable object");
+		switch (value.GetType()) {
+		case ObjType_Null:
+			obj->Append(InstructionType::Null);
+			break;
+		case ObjType_Type:
+			obj->Append(InstructionType::TypeLiteral);
+			obj->Append((PrimitiveType)value);
+			break;
+		case ObjType_Bool:
+			obj->Append((bool)value ? InstructionType::BoolTrue : InstructionType::BoolFalse);
+			break;
+		case ObjType_Int:
+			obj->Append(InstructionType::IntLiteral);
+			{
+				int64_t intval = value;
+				for (int i = 56; i >= 0; i -= 8) {
+					obj->Append((intval >> i) & 0xFF);
+				}
+			}
+			break;
+		case ObjType_Real:
+			obj->Append(InstructionType::RealLiteral);
+			{
+				double realval = value;
+				// Reinterpret bits of double as an int
+				uint64_t intbits = *reinterpret_cast<uint64_t*>(&realval);
+				for (int i = 56; i >= 0; i -= 8) {
+					obj->Append((intbits >> i) & 0xFF);
+				}
+			}
+			break;
+		case ObjType_HeapObj:
+			throw RuntimeError("Unable to transfer a HeapObject literal");
+			break;
+		}
 	}
 	void AppendText(VirtualMachine& m) {
 		size_t length = m.IP.ReadPosition();
@@ -212,16 +258,55 @@ namespace VMOperations {
 			obj->Append(m.IP.ReadByte());
 		}
 	}
-	void AppendNumber(VirtualMachine& m) {
-		// TODO
+	void AppendFormat(VirtualMachine& m) {
+		EnsureFrame(m, 2);
+		PrimitiveObject value = m.MainStack.back();
+		m.MainStack.pop_back();
+		HeapObject* obj = PopHeapObj(m);
+		if (obj->IsCode) throw RuntimeError("Unable to append text to an executable object");
+		PrimitiveType valtype = value.GetType();
+		std::string toAppend;
+		if (valtype == ObjType_HeapObj) {
+			HeapObject* valObj = (HeapObject*)value;
+			if (valObj->IsCode) throw RuntimeError("Unable to read text from an executable object");
+			for (byte b : valObj->Code) {
+				toAppend.push_back(b);
+			}
+		} else {
+			std::ostringstream formatter;
+			switch (valtype) {
+				case ObjType_Null: formatter << "Null"; break;
+				case ObjType_Type: formatter << TypeToString((PrimitiveType)value); break;
+				case ObjType_Bool: formatter << ((bool)value) ? "True" : "False"; break;
+				case ObjType_Int: formatter << (int64_t)value; break;
+				case ObjType_Real: formatter << (double)value; break;
+			}
+			toAppend = formatter.str();
+		}
+		for (char c : toAppend) {
+			obj->Append(c);
+		}
 	}
 	void PrintText(VirtualMachine& m) {
-		// TODO
+		m.MainStack.pop_back();
+		HeapObject* obj = PopHeapObj(m);
+		if (obj->IsCode) throw RuntimeError("Unable to append text to an executable object");
+		std::string str;
+		for (byte b : obj->Code) {
+			str.push_back(b);
+		}
+		std::cout << str;
+	}
+	void DebugLine(VirtualMachine& m) {
+		size_t lineNumber = m.IP.ReadPosition();
+		m.IP.LineNumber = lineNumber;
 	}
 }
 
 void VirtualMachine::Step() {
+	GarbageCollector* gc = _GC.get();
 	if (Completed) return;
+	if (gc) gc->Suspend();
 	InstructionType cmd = (InstructionType)IP.ReadByte();
 	switch (cmd) {
 	case InstructionType::Ret: VMOperations::Ret(*this); break;
@@ -280,10 +365,13 @@ void VirtualMachine::Step() {
 	case InstructionType::AppendCode: VMOperations::AppendCode(*this); break;
 	case InstructionType::AppendCodeLiteral: VMOperations::AppendCodeLiteral(*this); break;
 	case InstructionType::AppendText: VMOperations::AppendText(*this); break;
-	case InstructionType::AppendNumber: VMOperations::AppendNumber(*this); break;
+	case InstructionType::AppendFormat: VMOperations::AppendFormat(*this); break;
 	case InstructionType::PrintText: VMOperations::PrintText(*this); break;
+	case InstructionType::DebugLine: VMOperations::DebugLine(*this); break;
 		// TODO: More opcodes
 	default:
+		if (gc) gc->Resume();
 		throw RuntimeError("This opcode has not been implemented yet.");
 	}
+	if (gc) gc->Resume();
 }
