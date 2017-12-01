@@ -85,23 +85,18 @@ void GarbageCollector::FastCollect(bool force) {
 
 void GarbageCollector::SlowCollect() {
 	FastCollect(true);
-	size_t FreeCount = 0;
 	std::unordered_set<const HeapObject*> whiteSet; // Objects which have not been referenced yet
 	std::vector<const HeapObject*> grayList; // Objects to check for referencing
 	std::vector<const HeapObject*> referenceList; // Temporarily stores the references each object has
 	// Get set of all known objects into whiteSet
-	size_t ObjCount = 0;
 	for (const auto& kvp : totalrefcount) {
 		whiteSet.insert(kvp.first);
-		ObjCount++;
 	}
 	
 	// Move objects to the gray list if they are directly accessible from the stack
-	size_t StackCount = 0;
 	for (const auto& kvp : stackrefcount) {
 		if (whiteSet.erase(kvp.first)) {
 			grayList.push_back(kvp.first);
-			StackCount++;
 		}
 	}
 	// Remove objects from the white set if they are accessible from the gray list
@@ -125,7 +120,6 @@ void GarbageCollector::SlowCollect() {
 		// When whiteObj's deleter is called,
 		// its members are added to the 'objects' collection for deallocation.
 		DeleteObject(whiteObj);
-		FreeCount++;
 	}
 	// Everything added to 'objects' has already been deleted during the above cleanup, so just delete the reference-count info.
 	while (!objects.empty()) {
@@ -143,9 +137,6 @@ void GarbageCollector::SlowCollect() {
 		else throw RuntimeError("Memory error: Unable to decrease reference count of unknown object.");
 	}
 	suspense--;
-	printf("%d objects\n", ObjCount);
-	printf("%d objects on stack\n", StackCount);
-	printf("%d objects freed\n", FreeCount);
 }
 
 void GarbageCollector::Clear() {

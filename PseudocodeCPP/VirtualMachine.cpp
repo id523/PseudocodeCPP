@@ -33,7 +33,6 @@ void VirtualMachine::Run() {
 }
 
 void VirtualMachine::CollectGarbage() {
-	printf("CollectGarbage\n");
 	_GC->SlowCollect();
 	AllocationCounter = 0;
 }
