@@ -12,6 +12,8 @@ private:
 	HeapObject* _GlobalObject;
 	void Step();
 public:
+	size_t AllocationCounter;
+	size_t AllocationCounterMax;
 	bool Completed;
 	InstructionIndex IP;
 	std::vector<PrimitiveObject> MainStack;
@@ -23,5 +25,6 @@ public:
 	HeapObject* GetGlobalObject();
 	void Reset();
 	void Run();
+	void CollectGarbage();
 };
 

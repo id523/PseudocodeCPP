@@ -58,7 +58,9 @@ enum InstructionType : byte {
 	PrintText, // Pops an object pointer and prints the text of the object to standard output.
 	// DEBUG
 	DebugLine, // Skips the next four bytes of program, interpreting them as a line number. If an error occurs, it will display that line number.
-	// Count
+	// GC
+	PerformGC,
+    // Count
 	InstructionCount
 };
 
@@ -89,4 +91,6 @@ const char* const InstructionTypeTexts[InstructionCount] {
 	"GetMember", "SetMember", "GetMemberDynamic", "SetMemberDynamic", 
 	"PushFrame", "PopFrame", "Pick", "Bury", "PopDiscard",
 	"ClearCode", "ClearText", "AppendCode", "AppendCodeLiteral", "AppendText", "AppendFormat", "PrintText",
-	"DebugLine", };
+	"DebugLine", 
+	"PerformGC",
+};

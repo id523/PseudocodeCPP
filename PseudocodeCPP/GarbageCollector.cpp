@@ -27,24 +27,6 @@ void GarbageCollector::IncrementRefCount(const HeapObject * ref, bool stack) {
 	else totalrefcount[ref] = 1;
 }
 
-bool GarbageCollector::DecrementWithoutCollect(const HeapObject * ref) {
-	// If there is an entry in the reference-count map, decrement it
-	if (totalrefcount.count(ref) > 0) {
-		totalrefcount[ref]--;
-		// If the resulting refcount is zero, remove that key from the map
-		if (totalrefcount[ref] <= 0) {
-			totalrefcount.erase(ref);
-			// Notify the caller that the reference count has dropped to zero
-			return true;
-		} else {
-			// Notify the caller that the reference count has not dropped to zero
-			return false;
-		}
-	}
-	// Otherwise error
-	else throw RuntimeError("Memory error: Unable to decrease reference count of unknown object.");
-}
-
 size_t GarbageCollector::RandNext(size_t max) {
 	randstate *= 6364136223846793005ui64;
 	randstate += 1442695040888963407ui64;
@@ -64,9 +46,8 @@ void GarbageCollector::DecrementRefCount(const HeapObject * ref, bool stack) {
 		// Otherwise error
 		else throw RuntimeError("Memory error: Unable to decrease reference count of unknown object.");
 	}
-
 	objects.push_back(ref);
-	if (suspense == 0) FastCollect();
+	FastCollect(false);
 }
 
 void GarbageCollector::Suspend() {
@@ -75,38 +56,52 @@ void GarbageCollector::Suspend() {
 
 void GarbageCollector::Resume() {
 	if (suspense > 0) suspense--;
-	if (suspense == 0) FastCollect();
+	FastCollect(false);
 }
 
-void GarbageCollector::FastCollect() {
-	// While there are objects to clean up,
-	while (!objects.empty()) {
-		// pick an object to clean up
-		const HeapObject* obj = Pick(objects);
-		// Decrement its reference count
-		bool doDeallocate = DecrementWithoutCollect(obj);
-		// If the reference count reaches zero,
-		if (doDeallocate) {
-			// Add the referenced objects to the cleanup queue
-			GetReferencedObjects(*obj, objects);
-			DeleteObject(obj);
+void GarbageCollector::FastCollect(bool force) {
+	if (force || suspense == 0) {
+		// Suspend to prevent recursion
+		suspense++;
+		// While there are objects to decrement the reference count of,
+		while (!objects.empty()) {
+			// Pick an object and decrement its reference count
+			const HeapObject* ref = Pick(objects);
+			// If there is an entry in the reference-count map, decrement it
+			if (totalrefcount.count(ref) > 0) {
+				totalrefcount[ref]--;
+				// If the resulting refcount is zero, remove the object
+				if (totalrefcount[ref] <= 0) {
+					totalrefcount.erase(ref);
+					DeleteObject(ref);
+				}
+			}
+			// Otherwise error
+			else throw RuntimeError("Memory error: Unable to decrease reference count of unknown object.");
 		}
+		suspense--;
 	}
 }
 
 void GarbageCollector::SlowCollect() {
-	FastCollect();
+	FastCollect(true);
+	size_t FreeCount = 0;
 	std::unordered_set<const HeapObject*> whiteSet; // Objects which have not been referenced yet
 	std::vector<const HeapObject*> grayList; // Objects to check for referencing
 	std::vector<const HeapObject*> referenceList; // Temporarily stores the references each object has
 	// Get set of all known objects into whiteSet
+	size_t ObjCount = 0;
 	for (const auto& kvp : totalrefcount) {
 		whiteSet.insert(kvp.first);
+		ObjCount++;
 	}
+	
 	// Move objects to the gray list if they are directly accessible from the stack
+	size_t StackCount = 0;
 	for (const auto& kvp : stackrefcount) {
 		if (whiteSet.erase(kvp.first)) {
 			grayList.push_back(kvp.first);
+			StackCount++;
 		}
 	}
 	// Remove objects from the white set if they are accessible from the gray list
@@ -123,20 +118,34 @@ void GarbageCollector::SlowCollect() {
 			}
 		}
 	}
+	// All objects that should be deleted are in whiteObj, so disable recursive deallocation.
+	suspense++;
 	// Free all objects in the white set
 	for (const HeapObject* whiteObj : whiteSet) {
-		// Get all objects referenced by white objects
-		referenceList.clear();
-		GetReferencedObjects(*whiteObj, referenceList);
-		// For each referenced object
-		for (const HeapObject* referencedObj : referenceList) {
-			// If it is not in the white set, reduce the reference count
-			if (whiteSet.count(referencedObj) <= 0) {
-				DecrementWithoutCollect(referencedObj);
+		// When whiteObj's deleter is called,
+		// its members are added to the 'objects' collection for deallocation.
+		DeleteObject(whiteObj);
+		FreeCount++;
+	}
+	// Everything added to 'objects' has already been deleted during the above cleanup, so just delete the reference-count info.
+	while (!objects.empty()) {
+		// Pick an object and decrement its reference count
+		const HeapObject* ref = Pick(objects);
+		// If there is an entry in the reference-count map, decrement it
+		if (totalrefcount.count(ref) > 0) {
+			totalrefcount[ref]--;
+			// If the resulting refcount is zero, remove the entry from the refcount table
+			if (totalrefcount[ref] <= 0) {
+				totalrefcount.erase(ref);
 			}
 		}
-		DeleteObject(whiteObj);
+		// Otherwise error
+		else throw RuntimeError("Memory error: Unable to decrease reference count of unknown object.");
 	}
+	suspense--;
+	printf("%d objects\n", ObjCount);
+	printf("%d objects on stack\n", StackCount);
+	printf("%d objects freed\n", FreeCount);
 }
 
 void GarbageCollector::Clear() {

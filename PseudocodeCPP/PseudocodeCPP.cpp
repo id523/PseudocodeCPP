@@ -23,22 +23,26 @@ int main(size_t argc, char** argv) {
 		getline(cin, codefileName);
 	}
 	ifstream codefile(codefileName, ios::in | ios::binary);
-	char buf[BUFSIZE];
-	size_t readChars = BUFSIZE;
-	while (codefile.read(buf, BUFSIZE)) {
+	if (codefile.is_open()) {	
+		char buf[BUFSIZE];
+		size_t readChars = BUFSIZE;
+		while (codefile.read(buf, BUFSIZE)) {
+			for (size_t i = 0; i < readChars; i++) {
+				code.push_back(buf[i]);
+			}
+		}
+		readChars = codefile.gcount();
 		for (size_t i = 0; i < readChars; i++) {
 			code.push_back(buf[i]);
 		}
-	}
-	readChars = codefile.gcount();
-	for (size_t i = 0; i < readChars; i++) {
-		code.push_back(buf[i]);
-	}
-	try {
-		vm.Run();
-		cout << "Program Complete" << endl;
-	} catch (const RuntimeError& err) {
-		cout << "Error: " << err.what() << endl;
+		try {
+			vm.Run();
+			cout << "Program Complete" << endl;
+		} catch (const RuntimeError& err) {
+			cout << "Error: " << err.what() << endl;
+		}
+	} else {
+		cout << "Error: Unable to open code file" << endl;
 	}
 	getchar();
 	return 0;

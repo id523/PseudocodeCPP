@@ -107,12 +107,14 @@ namespace VMOperations {
 	void CreateObject(VirtualMachine& m) {
 		m.MainStack.emplace_back(m.GetGC(), true);
 		m.MainStack.back() = new HeapObject();
+		m.AllocationCounter++;
 	}
 	void ShallowCopy(VirtualMachine& m) {
 		EnsureFrame(m, 1);
 		if (m.MainStack.back().GetType() == ObjType_HeapObj) {
 			HeapObject* copy = new HeapObject(*(HeapObject*)m.MainStack.back());
 			m.MainStack.back() = copy;
+			m.AllocationCounter++;
 		}
 	}
 	void GetGlobalObject(VirtualMachine& m) {
@@ -396,9 +398,14 @@ void VirtualMachine::Step() {
 		case InstructionType::AppendFormat: VMOperations::AppendFormat(*this); break;
 		case InstructionType::PrintText: VMOperations::PrintText(*this); break;
 		case InstructionType::DebugLine: VMOperations::DebugLine(*this); break;
+
+		case InstructionType::PerformGC: this->CollectGarbage();
 			// TODO: More opcodes
 		default:
 			throw RuntimeError("This opcode has not been implemented.");
+		}
+		if (AllocationCounter >= AllocationCounterMax) {
+			CollectGarbage();
 		}
 	} catch (const RuntimeError& err) {
 		std::ostringstream composedError;
