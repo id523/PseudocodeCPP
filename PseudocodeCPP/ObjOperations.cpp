@@ -164,7 +164,7 @@ void ObjOperations::GetMember(PrimitiveObject & x, const std::string & memberNam
 	}
 }
 
-void ObjOperations::SetMember(PrimitiveObject & x, const std::string & memberName, const PrimitiveObject & v) {
+void ObjOperations::SetMember(const PrimitiveObject & x, const std::string & memberName, const PrimitiveObject & v) {
 	HeapObject* obj = x;
 	if (!obj) throw RuntimeError("Cannot access members of a null value");
 	PrimitiveObject inserted = v;

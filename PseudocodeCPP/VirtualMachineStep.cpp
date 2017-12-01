@@ -142,6 +142,7 @@ namespace VMOperations {
 		PrimitiveObject tmp = m.MainStack.back();
 		m.MainStack.pop_back();
 		ObjOperations::SetMember(m.MainStack.back(), memberName, tmp);
+		m.MainStack.pop_back();
 	}
 	void GetMemberDynamic(VirtualMachine& m) {
 		EnsureFrame(m, 2);
@@ -168,6 +169,7 @@ namespace VMOperations {
 		m.MainStack.pop_back();
 		std::string memberNameStr = memberName.str();
 		ObjOperations::SetMember(m.MainStack.back(), memberNameStr, tmp);
+		m.MainStack.pop_back();
 	}
 	void PushFrame(VirtualMachine& m) {
 		size_t FrameSize = m.IP.ReadByte();

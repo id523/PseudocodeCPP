@@ -28,5 +28,5 @@ namespace ObjOperations {
 	void ToInt(PrimitiveObject& x);
 	void ToReal(PrimitiveObject& x);
 	void GetMember(PrimitiveObject& x, const std::string& memberName);
-	void SetMember(PrimitiveObject& x, const std::string& memberName, const PrimitiveObject& v);
+	void SetMember(const PrimitiveObject& x, const std::string& memberName, const PrimitiveObject& v);
 }
