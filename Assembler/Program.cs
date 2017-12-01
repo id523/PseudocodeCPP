@@ -44,9 +44,10 @@ namespace Assembler {
 	        "PushFrame", "PopFrame", "Pick", "Bury", "PopDiscard",
 	        "ClearCode", "ClearText", "AppendCode", "AppendCodeLiteral", "AppendText", "AppendFormat", "PrintText",
 	        "DebugLine",
+            "PerformGC",
         };
         static string[] OpcodeShortNameArray = new string[] {
-            "R", "C", "TC", "J", "JT", "JF",
+            "R", "C", "TC", "JMP", "JT", "JF",
             "!", "~", "&&", "&", "||", "|",
             "===", "!==", "==", "!=",
             "<", ">", "<=", ">=",
@@ -59,8 +60,9 @@ namespace Assembler {
             "NEW", "CPY", "GLOBAL", "THIS",
             "GET", "SET", "GETD", "SETD",
             "PUSHF", "POPF", "P", "B", "POP",
-            "CLC", "CLT", "+C", "+L", "+T", "+F", "PRINT",
-            "DL",
+            "CL_C", "CL_T", "+C", "+L", "+T", "+F", "PRINT",
+            "LINE",
+            "GC",
         };
         static void Main(string[] args) {
             string source = null, destination = null;
@@ -90,7 +92,7 @@ namespace Assembler {
                 OpcodePattern.Append(Regex.Escape(OpcodeShortNameArray[i]));
             }
             OpcodePattern.Append(@")(\s+|$)");
-            Regex OpcodeRegex = new Regex(OpcodePattern.ToString());
+            Regex OpcodeRegex = new Regex(OpcodePattern.ToString(), RegexOptions.IgnoreCase);
             Regex RealRegex = new Regex(@"\G(?<val>[0-9.Ee+-]+)[FfRr]\s*");
             Regex Int4Regex = new Regex(@"\G(?<val>(\+-)?[0-9]+)[Ii]\s*");
             Regex Int1Regex = new Regex(@"\G(?<val>\+?[0-9]+)\s*");
