@@ -94,7 +94,8 @@ namespace Assembler {
             OpcodePattern.Append(@")(\s+|$)");
             Regex OpcodeRegex = new Regex(OpcodePattern.ToString(), RegexOptions.IgnoreCase);
             Regex RealRegex = new Regex(@"\G(?<val>[0-9.Ee+-]+)[FfRr]\s*");
-            Regex Int4Regex = new Regex(@"\G(?<val>(\+-)?[0-9]+)[Ii]\s*");
+            Regex Int8Regex = new Regex(@"\G(?<val>[\+-]?[0-9]+)[Ii]\s*");
+            Regex Int4Regex = new Regex(@"\G(?<val>\+?[0-9]+)[Pp]\s*");
             Regex Int1Regex = new Regex(@"\G(?<val>\+?[0-9]+)\s*");
             Regex LongStringRegex = new Regex(@"\G""(?<text>([^""]|\\"")*)(?<!\\)""\s*");
             Regex ShortStringRegex = new Regex(@"\G'(?<text>([^']|\\')*)(?<!\\)'\s*");
@@ -121,13 +122,21 @@ namespace Assembler {
                         } else {
                             throw new ParseException(string.Format("Invalid real value: {0}", strval));
                         }
-                    } else if ((m = Int4Regex.Match(textToParse, parsePos)).Success) {
+                    } else if ((m = Int8Regex.Match(textToParse, parsePos)).Success) {
                         string strval = m.Groups["val"].Value;
                         long val;
                         if (long.TryParse(strval, out val)) {
                             WriteBE(ByteList, val);
                         } else {
                             throw new ParseException(string.Format("Invalid integer value: {0}", strval));
+                        }
+                    } else if ((m = Int4Regex.Match(textToParse, parsePos)).Success) {
+                        string strval = m.Groups["val"].Value;
+                        uint val;
+                        if (uint.TryParse(strval, out val)) {
+                            WriteBE(ByteList, val);
+                        } else {
+                            throw new ParseException(string.Format("Invalid position value: {0}", strval));
                         }
                     } else if ((m = Int1Regex.Match(textToParse, parsePos)).Success) {
                         string strval = m.Groups["val"].Value;
