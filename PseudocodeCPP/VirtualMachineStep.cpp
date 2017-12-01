@@ -40,7 +40,7 @@ namespace VMOperations {
 		if (!funcObj) throw RuntimeError("Unable to call null as a function");
 		if (!funcObj->IsCode) throw RuntimeError("Unable to run code from a non-executable object");
 		m.MainStack.pop_back();
-		m.CallStack.push(m.IP + 1);
+		m.CallStack.push(m.IP);
 		m.IP.Jump(funcObj);
 	}
 	void TailCall(VirtualMachine& m) {
@@ -313,9 +313,9 @@ namespace VMOperations {
 		}
 	}
 	void PrintText(VirtualMachine& m) {
-		m.MainStack.pop_back();
+		EnsureFrame(m, 1);
 		HeapObject* obj = PopHeapObj(m);
-		if (obj->IsCode) throw RuntimeError("Unable to append text to an executable object");
+		if (obj->IsCode) throw RuntimeError("Unable to print text from an executable object");
 		std::string str;
 		for (byte b : obj->Code) {
 			str.push_back(b);
