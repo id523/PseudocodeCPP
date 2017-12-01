@@ -93,15 +93,16 @@ namespace Assembler {
             }
             OpcodePattern.Append(@")(\s+|$)");
             Regex OpcodeRegex = new Regex(OpcodePattern.ToString(), RegexOptions.IgnoreCase);
-            Regex RealRegex = new Regex(@"\G(?<val>[0-9.Ee+-]+)[FfRr]\s*");
-            Regex Int8Regex = new Regex(@"\G(?<val>[\+-]?[0-9]+)[Ii]\s*");
-            Regex Int4Regex = new Regex(@"\G(?<val>\+?[0-9]+)[Pp]\s*");
-            Regex Int1Regex = new Regex(@"\G(?<val>\+?[0-9]+)\s*");
-            Regex LongStringRegex = new Regex(@"\G""(?<text>([^""]|\\"")*)(?<!\\)""\s*");
-            Regex ShortStringRegex = new Regex(@"\G'(?<text>([^']|\\')*)(?<!\\)'\s*");
+            Regex RealRegex = new Regex(@"\G(?<val>[0-9.Ee+-]+)[FfRr]");
+            Regex Int8Regex = new Regex(@"\G(?<val>[\+-]?[0-9]+)[Ii]");
+            Regex Int4Regex = new Regex(@"\G(?<val>\+?[0-9]+)[Pp]");
+            Regex Int1Regex = new Regex(@"\G(?<val>\+?[0-9]+)");
+            Regex LongStringRegex = new Regex(@"\G""(?<text>([^""]|\\"")*)(?<!\\)""");
+            Regex ShortStringRegex = new Regex(@"\G'(?<text>([^']|\\')*)(?<!\\)'");
             Regex SpecialRegex = new Regex(@"\G[\{\}]");
             Regex LabelRegex = new Regex(@"\G:(?<label>.+?)(\s+|$)");
             Regex ToLabelRegex = new Regex(@"\G->(?<label>.+?)(\s+|$)");
+            Regex WhitespaceRegex = new Regex(@"\G\s+");
             Regex NextTokenRegex = new Regex(@"\G(?<token>.*?)(\s+|$)");
             string textToParse = File.ReadAllText(source, Encoding.UTF8);
             int parsePos = 0;
@@ -190,8 +191,10 @@ namespace Assembler {
                         } else {
                             throw new ParseException(string.Format("Label {0} is not defined", label));
                         }
+                    } else if ((m = WhitespaceRegex.Match(textToParse, parsePos)).Success) {
+                        // Ignore extraneous whitespace
                     } else if ((m = NextTokenRegex.Match(textToParse, parsePos)).Success) {
-                        throw new ParseException("Unknown token: " + m.Groups["token"].Value + ";");
+                        throw new ParseException("Unknown token '" + m.Groups["token"].Value + "'");
                     } else {
                         throw new ParseException(textToParse.Substring(parsePos));
                     }
