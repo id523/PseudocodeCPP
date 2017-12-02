@@ -17,22 +17,22 @@ void MapHeapObject::GetReferencedObjects(std::vector<const HeapObject*>& objqueu
 	}
 }
 
-PrimitiveObject MapHeapObject::GetMember(std::string key) const {
+PrimitiveObject MapHeapObject::GetMember(const std::string& key) const {
 	try {
 		return Members.at(key);
 	} catch (const std::out_of_range&) {
-		return PrimitiveObject(nullptr, nullptr, false);
+		return PrimitiveObject();
 	}
 }
 
-void MapHeapObject::SetMember(std::string key, const PrimitiveObject & value) {
+void MapHeapObject::SetMember(const std::string& key, const PrimitiveObject & value) {
 	Members[key] = value;
 }
 
-void MapHeapObject::SetMember(std::string key, PrimitiveObject && value) {
+void MapHeapObject::SetMember(const std::string& key, PrimitiveObject && value) {
 	Members[key] = std::move(value);
 }
 
-void MapHeapObject::DeleteMember(std::string key) {
+void MapHeapObject::DeleteMember(const std::string& key) {
 	Members.erase(key);
 }

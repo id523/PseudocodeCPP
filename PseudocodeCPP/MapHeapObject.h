@@ -9,9 +9,9 @@ public:
 	MapHeapObject();
 	virtual ~MapHeapObject();
 	virtual void GetReferencedObjects(std::vector<const HeapObject*>& objqueue) const;
-	virtual PrimitiveObject GetMember(std::string key) const;
-	virtual void SetMember(std::string key, const PrimitiveObject& value);
-	virtual void SetMember(std::string key, PrimitiveObject&& value);
-	virtual void DeleteMember(std::string key);
+	virtual PrimitiveObject GetMember(const std::string& key) const;
+	virtual void SetMember(const std::string& key, const PrimitiveObject& value);
+	virtual void SetMember(const std::string& key, PrimitiveObject&& value);
+	virtual void DeleteMember(const std::string& key);
 };
 

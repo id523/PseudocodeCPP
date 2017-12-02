@@ -1,23 +1,18 @@
 #pragma once
-#include "Byte.h"
-#include "PrimitiveObject.h"
-#include <map>
-#include <string>
-#include <vector>
-class HeapObject {
-protected:
-	HeapObject();
+#include "HeapObject.h"
+class ArrayHeapObject :
+	public HeapObject {
+private:
+	PrimitiveObject* arr;
+	size_t length;
 public:
-	std::vector<byte> Code;
-	bool IsCode;
-	virtual ~HeapObject();
-	void Append(byte b);
-	void ClearCode();
-	void ClearText();
-	byte GetCodeAt(size_t pos) const;
+	ArrayHeapObject(size_t len);
+	virtual ~ArrayHeapObject();
 	virtual void GetReferencedObjects(std::vector<const HeapObject*>& objqueue) const;
 	virtual PrimitiveObject GetMember(const std::string& key) const;
 	virtual void SetMember(const std::string& key, const PrimitiveObject& value);
 	virtual void SetMember(const std::string& key, PrimitiveObject&& value);
 	virtual void DeleteMember(const std::string& key);
 };
+
+bool ArrayParseIndexFromKey(const std::string& key, size_t& index, size_t length);

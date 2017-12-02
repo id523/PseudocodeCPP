@@ -63,6 +63,9 @@
     <ClInclude Include="MapHeapObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ArrayHeapObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PseudocodeCPP.cpp">
@@ -96,6 +99,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MapHeapObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ArrayHeapObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
