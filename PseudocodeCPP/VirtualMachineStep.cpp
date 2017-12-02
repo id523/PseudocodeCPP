@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "VirtualMachine.h"
+#include "VMOperations.h"
 #include "MapHeapObject.h"
 #include "InstructionType.h"
 #include "ObjOperations.h"

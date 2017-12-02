@@ -66,6 +66,15 @@
     <ClInclude Include="ArrayHeapObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="VirtualMachine.forward.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StackHeapObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VMOperations.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PseudocodeCPP.cpp">
@@ -102,6 +111,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ArrayHeapObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StackHeapObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

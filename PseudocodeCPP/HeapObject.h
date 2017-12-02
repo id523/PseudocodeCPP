@@ -1,6 +1,7 @@
 #pragma once
 #include "Byte.h"
 #include "PrimitiveObject.h"
+#include "VirtualMachine.forward.h"
 #include <map>
 #include <string>
 #include <vector>
@@ -20,4 +21,5 @@ public:
 	virtual void SetMember(const std::string& key, const PrimitiveObject& value);
 	virtual void SetMember(const std::string& key, PrimitiveObject&& value);
 	virtual void DeleteMember(const std::string& key);
+	virtual void CustomCommand(size_t cmd, VirtualMachine& vm);
 };

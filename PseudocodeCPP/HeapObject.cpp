@@ -46,6 +46,10 @@ void HeapObject::SetMember(const std::string& key, PrimitiveObject && value) {
 void HeapObject::DeleteMember(const std::string& key) {
 }
 
+void HeapObject::CustomCommand(size_t cmd, VirtualMachine & vm) {
+	throw RuntimeError("Custom commands are not supported by this object. This is normally caused by a compiler error.");
+}
+
 void GetReferencedObjects(const HeapObject& obj, std::vector<const HeapObject*>& objqueue) {
 	obj.GetReferencedObjects(objqueue);
 }
