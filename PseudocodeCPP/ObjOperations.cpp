@@ -169,5 +169,9 @@ void ObjOperations::SetMember(const PrimitiveObject & x, const std::string & mem
 	if (!obj) throw RuntimeError("Cannot access members of a null value");
 	PrimitiveObject inserted = v;
 	inserted.SetOnStack(false);
-	obj->Members[memberName] = std::move(inserted);
+	if (inserted.IsNull()) {
+		obj->Members.erase(memberName);
+	} else {
+		obj->Members[memberName] = std::move(inserted);
+	}
 }
