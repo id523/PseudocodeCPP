@@ -56,12 +56,13 @@ enum InstructionType : byte {
 	AppendText, // Skips the next four bytes of program, interpreting them as a length, pops an object pointer off the stack, and appends the next [length] bytes to the object as text.
 	AppendFormat, // Pops an object pointer and a value off the stack, and appends the string representation of that value to the text of the object.
 	PrintText, // Pops an object pointer and prints the text of the object to standard output.
-	// DEBUG
+
 	DebugLine, // Skips the next four bytes of program, interpreting them as a line number. If an error occurs, it will display that line number.
-	// GC
-	PerformGC,
+	PerformGC, // Immediately causes a slow garbage collection.
+	ThrowError, // Skips the next four bytes of program, interpreting them as a length, and causes a runtime error with the message given by the next [length] bytes.
     // Count
 	InstructionCount
+	
 };
 
 /*
@@ -93,4 +94,5 @@ const char* const InstructionTypeTexts[InstructionCount] {
 	"ClearCode", "ClearText", "AppendCode", "AppendCodeLiteral", "AppendText", "AppendFormat", "PrintText",
 	"DebugLine", 
 	"PerformGC",
+	"ThrowError",
 };

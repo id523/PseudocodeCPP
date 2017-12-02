@@ -327,6 +327,15 @@ namespace VMOperations {
 		size_t lineNumber = m.IP.ReadPosition();
 		m.IP.LineNumber = lineNumber;
 	}
+	void ThrowError(VirtualMachine& m) {
+		size_t length = m.IP.ReadPosition();
+		char* err = new char[length];
+		for (size_t i = 0; i < length; i++) {
+			err[i] = m.IP.ReadByte();
+		}
+		std::unique_ptr<char[]> cleanup(err);
+		throw RuntimeError(err, length);
+	}
 }
 
 void VirtualMachine::Step() {
@@ -404,6 +413,7 @@ void VirtualMachine::Step() {
 		case InstructionType::DebugLine: VMOperations::DebugLine(*this); break;
 
 		case InstructionType::PerformGC: this->CollectGarbage();
+		case InstructionType::ThrowError: VMOperations::ThrowError(*this); break;
 			// TODO: More opcodes
 		default:
 			throw RuntimeError("This opcode has not been implemented.");

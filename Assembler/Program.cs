@@ -51,6 +51,7 @@ namespace Assembler {
 	        "ClearCode", "ClearText", "AppendCode", "AppendCodeLiteral", "AppendText", "AppendFormat", "PrintText",
 	        "DebugLine",
             "PerformGC",
+            "ThrowError",
         };
         static string[] OpcodeShortNameArray = new string[] {
             "R", "C", "TC", "JMP", "JT", "JF",
@@ -69,6 +70,7 @@ namespace Assembler {
             "CL_C", "CL_T", "+C", "+L", "+T", "+F", "PRINT",
             "LINE",
             "GC",
+            "ERR"
         };
         static void Main(string[] args) {
             string source = null, destination = null;
