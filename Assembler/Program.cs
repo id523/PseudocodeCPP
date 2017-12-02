@@ -23,6 +23,12 @@ namespace Assembler {
             c.Add((byte)((v >> 8) & 0xFF));
             c.Add((byte)(v & 0xFF));
         }
+        static void WriteBE(List<byte> c, uint v, int index) {
+            c[index] = (byte)((v >> 24) & 0xFF);
+            c[index + 1] = (byte)((v >> 16) & 0xFF);
+            c[index + 2] = (byte)((v >> 8) & 0xFF);
+            c[index + 3] = (byte)(v & 0xFF);
+        }
         static void WriteBE(List<byte> c, long v) {
             for (int s = 56; s >= 0; s -= 8) {
                 c.Add((byte)((v >> s) & 0xFF));
@@ -106,12 +112,14 @@ namespace Assembler {
             Regex NextTokenRegex = new Regex(@"\G(?<token>.*?)(\s+|$)");
             string textToParse = File.ReadAllText(source, Encoding.UTF8);
             int parsePos = 0;
-            var OutBytes = new Stack<Tuple<List<byte>, Dictionary<string, uint>>>();
-            OutBytes.Push(Tuple.Create(new List<byte>(), new Dictionary<string, uint>()));
+            var OutBytes = new Stack<Tuple<List<byte>, Dictionary<string, uint>, Dictionary<int, string>>>();
+            OutBytes.Push(Tuple.Create(new List<byte>(), new Dictionary<string, uint>(), new Dictionary<int, string>()));
             try {
                 while (parsePos < textToParse.Length) {
-                    List<byte> ByteList = OutBytes.Peek().Item1;
-                    Dictionary<string, uint> Labels = OutBytes.Peek().Item2;
+                    var CurrentContext = OutBytes.Peek();
+                    List<byte> ByteList = CurrentContext.Item1;
+                    Dictionary<string, uint> Labels = CurrentContext.Item2;
+                    Dictionary<int, string> ToLabels = CurrentContext.Item3;
                     Match m;
                     if ((m = OpcodeRegex.Match(textToParse, parsePos)).Success) {
                         ByteList.Add(Opcodes[m.Groups["opcode"].Value.ToUpper()]);
@@ -148,12 +156,12 @@ namespace Assembler {
                             throw new ParseException(string.Format("Invalid byte value: {0}", strval));
                         }
                     } else if ((m = LongStringRegex.Match(textToParse, parsePos)).Success) {
-                        string text = m.Groups["text"].Value.Replace("\"\"", "\"");
+                        string text = m.Groups["text"].Value.Replace("\\\"", "\"");
                         byte[] textBytes = Encoding.UTF8.GetBytes(text);
                         WriteBE(ByteList, (uint)textBytes.Length);
                         ByteList.AddRange(textBytes);
                     } else if ((m = ShortStringRegex.Match(textToParse, parsePos)).Success) {
-                        string text = m.Groups["text"].Value.Replace("''", "'");
+                        string text = m.Groups["text"].Value.Replace("\\'", "'");
                         byte[] textBytes = Encoding.UTF8.GetBytes(text);
                         if (textBytes.Length > 255) {
                             throw new ParseException(string.Format(
@@ -165,11 +173,21 @@ namespace Assembler {
                     } else if ((m = SpecialRegex.Match(textToParse, parsePos)).Success) {
                         switch (m.Value) {
                         case "{":
-                            OutBytes.Push(Tuple.Create(new List<byte>(), new Dictionary<string, uint>()));
+                            OutBytes.Push(Tuple.Create(new List<byte>(), new Dictionary<string, uint>(), new Dictionary<int, string>()));
                             break;
                         case "}":
                             if (OutBytes.Count <= 1) {
                                 throw new ParseException("Unexpected } (end of code literal)");
+                            }
+                            // Resolve labels
+                            foreach (var kvp in ToLabels) {
+                                int index = kvp.Key;
+                                string label = kvp.Value;
+                                if (Labels.ContainsKey(label)) {
+                                    WriteBE(ByteList, Labels[label], index);
+                                } else {
+                                    throw new ParseException(string.Format("Label {0} is not defined", label));
+                                }
                             }
                             List<byte> InnerList = OutBytes.Pop().Item1;
                             ByteList = OutBytes.Peek().Item1;
@@ -186,11 +204,8 @@ namespace Assembler {
                         }
                     } else if ((m = ToLabelRegex.Match(textToParse, parsePos)).Success) {
                         string label = m.Groups["label"].Value;
-                        if (Labels.ContainsKey(label)) {
-                            WriteBE(ByteList, Labels[label]);
-                        } else {
-                            throw new ParseException(string.Format("Label {0} is not defined", label));
-                        }
+                        ToLabels.Add(ByteList.Count, label);
+                        WriteBE(ByteList, 0u);
                     } else if ((m = WhitespaceRegex.Match(textToParse, parsePos)).Success) {
                         // Ignore extraneous whitespace
                     } else if ((m = NextTokenRegex.Match(textToParse, parsePos)).Success) {
@@ -202,6 +217,20 @@ namespace Assembler {
                 }
                 if (OutBytes.Count > 1) {
                     throw new ParseException("Unmatched { (start of code literal)");
+                }
+                // Resolve labels
+                var OutCurrentContext = OutBytes.Peek();
+                List<byte> OutByteList = OutCurrentContext.Item1;
+                Dictionary<string, uint> OutLabels = OutCurrentContext.Item2;
+                Dictionary<int, string> OutToLabels = OutCurrentContext.Item3;
+                foreach (var kvp in OutToLabels) {
+                    int index = kvp.Key;
+                    string label = kvp.Value;
+                    if (OutLabels.ContainsKey(label)) {
+                        WriteBE(OutByteList, OutLabels[label], index);
+                    } else {
+                        throw new ParseException(string.Format("Label {0} is not defined", label));
+                    }
                 }
                 using (FileStream fs = new FileStream(destination, FileMode.Create)) {
                     byte[] OutByteArr = OutBytes.Pop().Item1.ToArray();
