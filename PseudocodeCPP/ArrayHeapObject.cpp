@@ -13,7 +13,7 @@ ArrayHeapObject::~ArrayHeapObject() {
 }
 
 void ArrayHeapObject::GetReferencedObjects(std::vector<const HeapObject*>& objqueue) const {
-	for (int i = 0; i < length; i++) {
+	for (size_t i = 0; i < length; i++) {
 		const PrimitiveObject& item = arr[i];
 		if (item.GetType() == ObjType_HeapObj) {
 			objqueue.push_back(item);
