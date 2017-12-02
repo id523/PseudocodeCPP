@@ -1,8 +1,9 @@
 #include "stdafx.h"
 #include "VirtualMachine.h"
+#include "MapHeapObject.h"
 
 VirtualMachine::VirtualMachine() : _GC(new GarbageCollector()), Completed(false) {
-	_GlobalObject = new HeapObject();
+	_GlobalObject = new MapHeapObject();
 	_GC->IncrementRefCount(_GlobalObject, true);
 	IP = InstructionIndex(_GC.get(), _GlobalObject, 0);
 	AllocationCounter = 0;

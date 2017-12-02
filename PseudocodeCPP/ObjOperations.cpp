@@ -157,11 +157,8 @@ void ObjOperations::ToReal(PrimitiveObject & x) {
 void ObjOperations::GetMember(PrimitiveObject & x, const std::string & memberName) {
 	HeapObject* obj = x;
 	if (!obj) throw RuntimeError("Cannot access members of a null value");
-	try {
-		x = obj->Members.at(memberName);
-	} catch (std::out_of_range ex) {
-		x = nullptr;
-	}
+	x = obj->GetMember(memberName);
+	x.SetOnStack(true);
 }
 
 void ObjOperations::SetMember(const PrimitiveObject & x, const std::string & memberName, const PrimitiveObject & v) {
@@ -170,8 +167,8 @@ void ObjOperations::SetMember(const PrimitiveObject & x, const std::string & mem
 	PrimitiveObject inserted = v;
 	inserted.SetOnStack(false);
 	if (inserted.IsNull()) {
-		obj->Members.erase(memberName);
+		obj->DeleteMember(memberName);
 	} else {
-		obj->Members[memberName] = std::move(inserted);
+		obj->SetMember(memberName, std::move(inserted));
 	}
 }

@@ -30,12 +30,24 @@ byte HeapObject::GetCodeAt(size_t pos) const {
 	return Code[pos];
 }
 
+void HeapObject::GetReferencedObjects(std::vector<const HeapObject*>& objqueue) const {
+}
+
+PrimitiveObject HeapObject::GetMember(std::string key) const {
+	return PrimitiveObject(nullptr, nullptr, false);
+}
+
+void HeapObject::SetMember(std::string key, const PrimitiveObject & value) {
+}
+
+void HeapObject::SetMember(std::string key, PrimitiveObject && value) {
+}
+
+void HeapObject::DeleteMember(std::string key) {
+}
+
 void GetReferencedObjects(const HeapObject& obj, std::vector<const HeapObject*>& objqueue) {
-	for (const auto& item : obj.Members) {
-		if (item.second.GetType() == ObjType_HeapObj) {
-			objqueue.push_back((HeapObject*)item.second);
-		}
-	}
+	obj.GetReferencedObjects(objqueue);
 }
 
 void DeleteObject(const HeapObject* obj) {

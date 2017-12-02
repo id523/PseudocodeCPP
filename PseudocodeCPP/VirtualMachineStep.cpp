@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "VirtualMachine.h"
+#include "MapHeapObject.h"
 #include "InstructionType.h"
 #include "ObjOperations.h"
 #include "RuntimeError.h"
@@ -106,7 +107,7 @@ namespace VMOperations {
 	}
 	void CreateObject(VirtualMachine& m) {
 		m.MainStack.emplace_back(m.GetGC(), true);
-		m.MainStack.back() = new HeapObject();
+		m.MainStack.back() = new MapHeapObject();
 		m.AllocationCounter++;
 	}
 	void ShallowCopy(VirtualMachine& m) {
@@ -334,6 +335,7 @@ void VirtualMachine::Step() {
 	if (gc) gc->Suspend();
 	InstructionType cmd = (InstructionType)IP.ReadByte();
 	const char* InstrName = cmd < InstructionCount ? InstructionTypeTexts[cmd] : "<unknown instruction>";
+	// printf("%s\n", InstrName);
 	try {
 		switch (cmd) {
 		case InstructionType::Ret: VMOperations::Ret(*this); break;

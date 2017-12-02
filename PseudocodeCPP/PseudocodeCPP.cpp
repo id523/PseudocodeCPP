@@ -31,7 +31,7 @@ int main(size_t argc, char** argv) {
 				code.push_back(buf[i]);
 			}
 		}
-		readChars = codefile.gcount();
+		readChars = (size_t)codefile.gcount();
 		for (size_t i = 0; i < readChars; i++) {
 			code.push_back(buf[i]);
 		}
