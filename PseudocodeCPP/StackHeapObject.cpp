@@ -23,7 +23,7 @@ void StackHeapObject::CustomCommand(size_t cmd, VirtualMachine & vm)  {
 	// 1 = push
 	// 2 = pop
 	switch (cmd) {
-	case 0:
+	case 0: // count
 		stack.push_back((int64_t)stack.size());
 		break;
 	case 1: // push
