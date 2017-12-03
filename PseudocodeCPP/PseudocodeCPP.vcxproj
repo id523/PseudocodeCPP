@@ -153,6 +153,7 @@
     <ClInclude Include="MapHeapObject.h" />
     <ClInclude Include="PrimitiveObject.forward.h" />
     <ClInclude Include="ObjOperations.h" />
+    <ClInclude Include="QueueHeapObject.h" />
     <ClInclude Include="RuntimeError.h" />
     <ClInclude Include="PrimitiveObject.h" />
     <ClInclude Include="PrimitiveType.h" />
@@ -170,6 +171,7 @@
     <ClCompile Include="InstructionIndex.cpp" />
     <ClCompile Include="MapHeapObject.cpp" />
     <ClCompile Include="ObjOperations.cpp" />
+    <ClCompile Include="QueueHeapObject.cpp" />
     <ClCompile Include="RuntimeError.cpp" />
     <ClCompile Include="PrimitiveObject.cpp" />
     <ClCompile Include="PseudocodeCPP.cpp" />

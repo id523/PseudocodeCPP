@@ -1,13 +1,14 @@
 #pragma once
 #include "MapHeapObject.h"
+#include <deque>
 
-class StackHeapObject :
+class QueueHeapObject :
 	public MapHeapObject {
 private:
-	std::vector<PrimitiveObject> stack;
+	std::deque<PrimitiveObject> queue;
 public:
-	StackHeapObject();
-	virtual ~StackHeapObject();
+	QueueHeapObject();
+	virtual ~QueueHeapObject();
 	virtual void GetReferencedObjects(std::vector<const HeapObject*>& objqueue) const;
 	virtual void CustomCommand(size_t cmd, VirtualMachine& vm);
 };
