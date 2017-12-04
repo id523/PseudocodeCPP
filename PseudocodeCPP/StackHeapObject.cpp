@@ -17,6 +17,7 @@ void StackHeapObject::GetReferencedObjects(std::vector<const HeapObject*>& objqu
 			objqueue.push_back(item);
 		}
 	}
+	MapHeapObject::GetReferencedObjects(objqueue);
 }
 
 void StackHeapObject::CustomCommand(size_t cmd, VirtualMachine & vm) {
